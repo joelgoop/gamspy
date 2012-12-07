@@ -73,6 +73,7 @@ class GamsThread(QtCore.QThread):
 			self._results = self.make_dict(parts,self._results)
 		f.close()
 
+	# Make dictionary of results
 	def make_dict(self,current_list,level_above):
 		if len(current_list)==2:
 			level_above[current_list[0]] = float(current_list[1])
