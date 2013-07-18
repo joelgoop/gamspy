@@ -64,6 +64,15 @@ class GamsThread(QtCore.QThread):
         return self._results
 
     # Read results from the put file generated from GAMS
+    # Place in a dictionary {(set_key1,...): value}
+    def read_results_as_tuple_dict(self):
+        self._results = {}
+        with open(self.model.res_file,'r') as f:
+            for line in f:
+                parts = line.split()
+                self._results[tuple(parts[:-1])] = float(parts[-1])
+
+    # Read results from the put file generated from GAMS
     def read_results(self):
         f = open(self.model.res_file,'r')
         self._results = dict()
