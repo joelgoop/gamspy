@@ -45,8 +45,6 @@ class GamsModel(object):
 class GamsThread(QtCore.QThread):
     """Class to run GAMS in a separate QThread"""
 
-    #gams_finished = QtCore.Signal()
-
     # Constructor
     def __init__(self,model):
         super(GamsThread, self).__init__()
@@ -57,7 +55,6 @@ class GamsThread(QtCore.QThread):
         os.chdir(self.model.gams_dir)
         sp.call(["gams", self.model.model_file])
         self.read_results()
-    #   self.gams_finished.emit()
 
     # Returns results dictionary
     def get_results(self):
