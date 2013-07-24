@@ -5,13 +5,13 @@ from ..misc.helper_classes import Struct
 
 class GamsModel(object):
     """Class that contains necessary data to run a GAMS model"""
-    def __init__(self, gams_dir, model_file, res_file, elem_collections=[]):
+    def __init__(self, gams_dir, model_file, res_file, elem_collections=None):
         super(GamsModel, self).__init__()
         self.gams_dir = os.path.abspath(gams_dir)
         os.chdir(self.gams_dir)
         self.model_file = model_file
         self.res_file = res_file
-        self.elem_collections = elem_collections
+        self.elem_collections = elem_collections if elem_collections else []
 
     def add_element_collection(self,elem_collection):
         self.elem_collections.append(elem_collection)
@@ -28,7 +28,7 @@ class GamsModel(object):
     # Read results from the put file generated from GAMS
     # Place in a dictionary {(set_key1,...): value}
     def read_results_as_tuple_dict(self):
-        with open(self.model.res_file,'r') as f:
+        with open(self.res_file,'r') as f:
             self._results = {tuple(parts[:-1]): float(parts[-1]) for parts in (line.split() for line in f)}
 
     def full_file_name(self,f_name):
@@ -167,9 +167,9 @@ class GamsSet(GamsElement):
 
 class GamsParameter(GamsElement):
     """Class to represent a parameter in GAMS"""
-    def __init__(self, name, data, set_names=[]):
+    def __init__(self, name, data, set_names=None):
         super(GamsParameter, self).__init__(name,data,'PARAMETER')
-        self.set_names = set_names
+        self.set_names = set_names if set_names else []
         if not set_names:
             self._get_data_as_strings = self._get_data_as_strings_1d
         else:
@@ -179,7 +179,7 @@ class GamsParameter(GamsElement):
         return '' if not self.set_names else '('+','.join(self.set_names)+')'
 
     def _get_data_as_strings_nd(self):
-        return ['.'.join(key)+'\t\t'+str(val) for key,val in self.data.items()]
+        return ['.'.join(key)+'\t\t'+str(val) for key,val in self.data]
 
     def _get_data_as_strings_1d(self):
         return [str(self.data)]
@@ -187,16 +187,16 @@ class GamsParameter(GamsElement):
 
 class GamsElementCollection(object):
     """Handle collections of elements"""
-    def __init__(self, elem_file, elements=[]):
+    def __init__(self, elem_file, elems=None):
         super(GamsElementCollection, self).__init__()
-        self.elements = elements
+        self.elems = elems if elems else []
         self.elem_file = elem_file
 
     def add_element(self,element):
-        self.elements.append(element)
+        self.elems.append(element)
 
     # Write all elements to file
     def write_elements(self):
         with open(self.elem_file,'wb') as f:
-            for el in self.elements:
+            for el in self.elems:
                 el.write_to_inc(f)
