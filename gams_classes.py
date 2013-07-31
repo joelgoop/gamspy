@@ -28,8 +28,12 @@ class GamsModel(object):
     # Read results from the put file generated from GAMS
     # Place in a dictionary {(set_key1,...): value}
     def read_results_as_tuple_dict(self):
-        with open(self.res_file,'r') as f:
-            self._results = {tuple(parts[:-1]): float(parts[-1]) for parts in (line.split() for line in f)}
+        self._results = self.import_results(self.res_file)
+
+    @staticmethod
+    def import_results(res_file):
+        with open(res_file,'r') as f:
+            return {tuple(parts[:-1]): float(parts[-1]) for parts in (line.split() for line in f)}
 
     def full_file_name(self,f_name):
         return self.gams_dir + '/' + f_name
