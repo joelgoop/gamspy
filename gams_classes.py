@@ -211,5 +211,5 @@ class GamsGlobal(GamsElement):
         super(GamsGlobal, self).__init__(name,value,identifier='$setglobal')
 
     def write_to_inc(self,f):
-        f.write('{identifier} {name} {value}'.format(identifier=self.identifier,name=self.name,value=self.data))
+        f.write('{identifier} {name} {value}\n'.format(identifier=self.identifier,name=self.name,value=self.data))
 
