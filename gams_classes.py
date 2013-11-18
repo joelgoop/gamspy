@@ -5,7 +5,7 @@ from ..misc.helper_classes import Struct
 
 class GamsModel(object):
     """Class that contains necessary data to run a GAMS model"""
-    def __init__(self, gams_dir, model_file, res_file, elem_collections=None):
+    def __init__(self, gams_dir, model_file, res_file=None, elem_collections=None):
         super(GamsModel, self).__init__()
         self.gams_dir = os.path.abspath(gams_dir)
         os.chdir(self.gams_dir)
@@ -82,7 +82,8 @@ class GamsThread(QtCore.QThread):
     def run(self):
         os.chdir(self.model.gams_dir)
         sp.call(["gams", self.model.model_file])
-        self.read_results()
+        if self.model.res_file != None:
+            self.read_results()
 
     # Returns results dictionary
     def get_results(self):
