@@ -74,11 +74,11 @@ class GamsThread(QtCore.QThread):
     """Class to run GAMS in a separate QThread"""
 
     # Constructor
-    def __init__(self,model,gams_exec='C:/GAMS/win64/23.8/gams.exe'):
+    def __init__(self,model,gams_exec='C:/GAMS/win64/23.9/gams.exe'):
         super(GamsThread, self).__init__()
         self.model = model
         self.gams_exec = gams_exec
-        allowed_gams_files = ["C:/GAMS/win64/23.8/gams.exe","C:/GAMS/win64/24.0/gams.exe","C:/GAMS/win64/24.1/gams.exe"]
+        allowed_gams_files = ["C:/GAMS/win64/23.8/gams.exe","C:/GAMS/win64/23.9/gams.exe","C:/GAMS/win64/24.0/gams.exe","C:/GAMS/win64/24.1/gams.exe"]
         if self.gams_exec not in allowed_gams_files:
             raise ValueError("Input for GAMS executable is not allowed.")
 
