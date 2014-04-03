@@ -84,7 +84,7 @@ class GamsThread(QtCore.QThread):
 
     # Run thread
     def run(self):
-        p = sp.call([self.gams_exec,self.model.model_file],cwd=self.model.gams_dir,stdout=sp.PIPE,stderr=sp.PIPE)
+        p = sp.Popen([self.gams_exec,self.model.model_file],cwd=self.model.gams_dir)
         if p != 0:
             raise Exception("GAMS returned with an error. Return code is {}.".format(p))
         if self.model.res_file != None:
