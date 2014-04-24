@@ -1,0 +1,13 @@
+{% macro render_definitions(type,items) -%}
+{{ type|upper }}
+{%- for item in items %}
+    {{ item.name }}{% if item.subsetof %}({{ item.subsetof|join(',') }}){% endif %}
+{%- endfor %}
+;
+{%- endmacro %}
+
+{% macro section_title(title) -%}
+*****************************************
+*** {{ title|upper }}
+*****************************************
+{%- endmacro %}

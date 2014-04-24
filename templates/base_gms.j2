@@ -1,0 +1,21 @@
+$ontext
+{% if title is defined %}Title: {{ title }}{% endif %}
+Author: {{ author if author is defined else 'Joel Goop' }}
+{%- if description is defined %}
+
+{{ description}}
+{%- endif %}
+$offtext
+{%- from "macros_gms.j2" import render_definitions,section_title %}
+
+{{ section_title("set definitions")}}
+{{ render_definitions("sets",sets)}}
+
+{{ section_title("parameter definitions")}}
+{{ render_definitions("parameters",parameters)}}
+
+{{ section_title("variable definitions")}}
+{{ render_definitions("variables",variables)}}
+
+{{ section_title("equation definitions")}}
+{{ render_definitions("equations",equations)}}
