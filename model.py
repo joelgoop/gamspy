@@ -1,25 +1,15 @@
 import os
 import subprocess as sp
 from PySide import QtCore
-from ..misc.helper_classes import Struct
 
 class GamsModel(object):
     """Class that contains necessary data to run a GAMS model"""
-    def __init__(self, gams_dir, model_file, res_file=None, elem_collections=None):
+    def __init__(self, gams_dir, model_file, res_file=None):
         super(GamsModel, self).__init__()
         self.gams_dir = os.path.abspath(gams_dir)
         os.chdir(self.gams_dir)
         self.model_file = model_file
         self.res_file = res_file
-        self.elem_collections = elem_collections if elem_collections else []
-
-    def add_element_collection(self,elem_collection):
-        self.elem_collections.append(elem_collection)
-
-    # Write all elements to their respective files
-    def write_elements(self):
-        for c in self.elem_collections:
-            c.write_elements()
 
     # Returns results dictionary
     def get_results(self):
