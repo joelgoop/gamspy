@@ -1,4 +1,7 @@
 import copy
+import jinja2
+
+VALID_EQN_OPS = ["=e=","=l=","=g="]
 
 def isnumber(val):
     try:
@@ -7,33 +10,32 @@ def isnumber(val):
         return False
     return True
 
-class GamsArithmeticElement(object):
+class GamsArithmeticExpression(object):
     """Gams elements that can be added, subtracted, multiplied and divided to create expressions."""
     def __init__(self,parenthesis=False):
-        super(GamsArithmeticElement,self).__init__()
+        super(GamsArithmeticExpression,self).__init__()
         self.parenthesis = parenthesis
 
-
     def __add__(self,other):
-        if not (isinstance(other,GamsArithmeticElement) or isnumber(other)):
+        if not (isinstance(other,GamsArithmeticExpression) or isnumber(other)):
             raise ValueError('Arithmetic not allowed on instance of {}.'.format(other.__class__.__name__))
         return GamsExpression('+',self,other)
     def __sub__(self,other):
         if isnumber(other):
             return GamsExpression('-',self,other)
-        if not isinstance(other,GamsArithmeticElement):
+        if not isinstance(other,GamsArithmeticExpression):
             raise ValueError('Arithmetic not allowed on instance of {}.'.format(other.__class__.__name__))
         return GamsExpression('-',self,other.parenthesized())
     def __div__(self,other):
         if isnumber(other):
             return GamsExpression('/',self.parenthesized(),other)
-        if not isinstance(other,GamsArithmeticElement):
+        if not isinstance(other,GamsArithmeticExpression):
             raise ValueError('Arithmetic not allowed on instance of {}.'.format(other.__class__.__name__))
         return GamsExpression('/',self.parenthesized(),other.parenthesized())
     def __mul__(self,other):
         if isnumber(other):
             return GamsExpression('*',self.parenthesized(),other)
-        if not isinstance(other,GamsArithmeticElement):
+        if not isinstance(other,GamsArithmeticExpression):
             raise ValueError('Arithmetic not allowed on instance of {}.'.format(other.__class__.__name__))
         return GamsExpression('*',self.parenthesized(),other.parenthesized())
 
@@ -45,6 +47,9 @@ class GamsArithmeticElement(object):
         return GamsExpression(str(other))*self
     def __rdiv__(self,other):
         return GamsExpression(str(other))/self
+
+    def __lt__(self,other):
+        return GamsEquationExpression('=l=',self,other)
 
     def parenthesized(self):
         new_element = copy.copy(self)
@@ -64,7 +69,7 @@ class GamsElement(object):
         return self.name + indices_str
 
 
-class GamsVariable(GamsElement,GamsArithmeticElement):
+class GamsVariable(GamsElement,GamsArithmeticExpression):
     """A variable in GAMS"""
     def __init__(self, name, indices=None):
         super(GamsVariable, self).__init__(name,indices)
@@ -83,14 +88,14 @@ class GamsSet(GamsDataElement):
         super(GamsSet, self).__init__(name,data,indices)
 
 
-class GamsParameter(GamsDataElement,GamsArithmeticElement):
+class GamsParameter(GamsDataElement,GamsArithmeticExpression):
     """A parameter in GAMS"""
     def __init__(self, name, data=None, indices=None):
         super(GamsParameter, self).__init__(name,data,indices)
 
 
 
-class GamsExpression(GamsArithmeticElement):
+class GamsExpression(GamsArithmeticExpression):
     """A GAMS expression tree"""
     def __init__(self,current,left=None,right=None):
         super(GamsExpression, self).__init__()
@@ -116,24 +121,52 @@ class GamsFunctionTypeExpression(GamsExpression):
     def __str__(self):
         return '{}({})'.format(self.funcname,','.join(map(str,self.args)))
 
+def gams_sum(over_set,arg):
+    return GamsFunctionTypeExpression('sum',(over_set.name,arg))
+def gams_prod(over_set,arg):
+    return GamsFunctionTypeExpression('prod',(over_set.name,arg))
 
-class GamsSum(GamsFunctionTypeExpression):
-    """Gams summation function"""
-    def __init__(self, over_set, arg):
-        super(GamsSum, self).__init__('sum',(over_set.name,arg))
+class GamsEquationExpression(GamsExpression):
+    """An expression for an equation in Gams."""
+    def __init__(self, current, left, right):
+        super(GamsEquationExpression, self).__init__(current, left, right)
+        if current not in VALID_EQN_OPS:
+            raise ValueError('{} is not a valid operator in an equation.'.format(current))
 
-class GamsProd(GamsFunctionTypeExpression):
-    """Gams product function"""
-    def __init__(self, over_set, arg):
-        super(GamsProd, self).__init__('prod',(over_set.name,arg))
+
+
+class GamsEquation(GamsElement):
+    """A Gams 'equation', i.e. equality or inequality."""
+    def __init__(self, name, expr, indices=None):
+        super(GamsEquation, self).__init__(name,indices)
+        self.name = name
+        self.indices = indices
+        self.expr = expr
+
+    def __str__(self):
+        return str(self.expr)
 
 
 if __name__ == '__main__':
     i = GamsSet('i')
     t = GamsSet('t')
-    s = GamsSet('tt',indices=[i,t])
-    x = GamsParameter('x',indices=[i,t])
-    y = GamsParameter('y',indices=[i,t])
-    sumofy = GamsProd(s,x+y)
-    z = x+y+sumofy
-    print 1/x+2*z/(y-x)*5+10.0
+    s = GamsSet('tt',indices=[i])
+    p1 = GamsParameter('p1',indices=[i,t])
+    p2 = GamsParameter('p2',indices=[i,t])
+    x = GamsVariable('x',indices=[i,t])
+    y = GamsVariable('y',indices=[i,t])
+
+    eq1 = GamsEquation('eq1',(p1*x/(x+y) + p2*x*y < 2*x/p2),indices=[i,t])
+
+    context = {
+        "title": "Test model",
+        "sets": [i,t,s],
+        "parameters": [p1,p2],
+        "variables": [x,y],
+        "equations": [eq1]
+    }
+
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'))
+    template = env.get_template('base_gms.j2')
+
+    print template.render(context)

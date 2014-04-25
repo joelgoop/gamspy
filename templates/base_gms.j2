@@ -1,12 +1,17 @@
+{%- if title is defined -%}
+$title {{ title }}
+{% endif %}
 $ontext
-{% if title is defined %}Title: {{ title }}{% endif %}
+{%- if title is defined %}
+Title: {{ title }}
+{%- endif %}
 Author: {{ author if author is defined else 'Joel Goop' }}
 {%- if description is defined %}
 
 {{ description}}
 {%- endif %}
 $offtext
-{%- from "macros_gms.j2" import render_definitions,section_title %}
+{%- from "macros_gms.j2" import section_title,render_definitions,render_equations %}
 
 {{ section_title("set definitions")}}
 {{ render_definitions("sets",sets)}}
@@ -19,3 +24,6 @@ $offtext
 
 {{ section_title("equation definitions")}}
 {{ render_definitions("equations",equations)}}
+
+{{ section_title("model equations") }}
+{{ render_equations(equations) }}

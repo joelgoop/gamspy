@@ -1,7 +1,7 @@
 {% macro render_definitions(type,items) -%}
 {{ type|upper }}
 {%- for item in items %}
-    {{ item.name }}{% if item.subsetof %}({{ item.subsetof|join(',') }}){% endif %}
+    {{ item.name }}{% if item.indices %}({{ item.indices|join(',') }}){% endif %}
 {%- endfor %}
 ;
 {%- endmacro %}
@@ -10,4 +10,12 @@
 *****************************************
 *** {{ title|upper }}
 *****************************************
+{%- endmacro %}
+
+{% macro render_equations(items) -%}
+{%- for item in items %}
+{{ item.name }}
+{%- if item.indices %}({{ item.indices|join(',') }}){% endif %}..
+    {{ item|string }};
+{%- endfor %}
 {%- endmacro %}
