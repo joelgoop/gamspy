@@ -1,3 +1,5 @@
 *.c
 *.pyd
+*.pyc
 build/
+*.sublime-*
