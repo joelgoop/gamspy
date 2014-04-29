@@ -1,57 +1,61 @@
+
 import os
 import subprocess as sp
 import threading
+import jinja2
+from .types import *
 
 
-class GamsModel(object):
+class GamspyModel(object):
     """Class that contains necessary data to run a GAMS model"""
-    def __init__(self, gams_dir, model_file, gams_exec='C:/GAMS/win64/23.9/gams.exe', res_file=None):
-        super(GamsModel, self).__init__()
+    def __init__(self, title=None, gams_exec='C:/GAMS/win64/23.9/gams.exe'):
+        super(GamspyModel, self).__init__()
         if not os.path.isfile(gams_exec):
             raise ValueError("File {} is not a file.".format(gams_exec))
         self.gams_exec = gams_exec
-        self.gams_dir = os.path.abspath(gams_dir)
-        self.model_file = model_file
-        self.res_file = res_file
+        self.title = title
 
-    @property
-    def results(self):
-        return self._results
-
-    def full_file_name(self,f_name):
-        return self.gams_dir + '/' + f_name
-
-    # Property containing the model file name
-    @property
-    def model_file(self):
-        return self._model_file
-
-    @model_file.setter
-    def model_file(self,value):
-        if os.path.isfile(self.gams_dir+'/'+value):
-            if 'gms'==os.path.splitext(value)[1][1:]:
-                self._model_file = value
-            else:
-                raise IOError('Model file type is not .gms.\n'+value)
-        else:
-            raise IOError('Model file does not exist.\n'+value)
+        self.template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 
     def create_thread(self):
         return threading.Thread(target=self.run_model)
 
     def run_model(self):
         p = sp.Popen([self.gams_exec,self.model_file],cwd=self.gams_dir)
-        # Cannot read output from gams process. Why?? Output is shown when run in cmd
-        # while p.poll() is None:
-        #     for line in iter(p.stdout.readline, b''):
-        #         print line.rstrip()
         p.wait()
         if p.returncode != 0:
             raise Exception("GAMS returned with an error. Return code is {}.".format(p.returncode))
 
+    def write_to_file(self,filename):
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_dir))
+        template = env.get_template('base_gms.j2')
+        context = {
+            "title": self.title,
+            "sets": self.sets,
+            "parameters": self.parameters,
+            "variables": self.variables,
+            "equations": self.equations
+        }
+
+        with open(filename,'w') as f:
+            f.write(template.render(context))
+
 
 if __name__ == '__main__':
-    m = GamsModel(gams_dir='D:/git/wedd/gams',model_file='wedd.gms',gams_exec='C:/GAMS/win64/23.8/gams.exe')
-    t = m.create_thread()
-    t.start()
-    t.join()
+    m = GamspyModel(gams_exec='C:/GAMS/win64/23.8/gams.exe')
+    i = GamspySet('i',data=['test','test2','test3'])
+    t = GamspySet('t')
+    s = GamspySet('tt',indices=[i])
+    p1 = GamspyParameter('p1',indices=[i,t])
+    p2 = GamspyParameter('p2',indices=[i,t])
+    x = GamspyVariable('x',indices=[i,t])
+    y = GamspyVariable('y',indices=[i,t])
+
+    eq1 = GamspyEquation('eq1',(p1*x/(x+y) + p2*x*y < 2*x/p2),indices=[i,t])
+
+    m.sets = [i,t,s]
+    m.parameters = [p1,p2]
+    m.variables = [x,y]
+    m.equations = [eq1]
+    print "Generating file."
+    m.write_to_file('test.gms')

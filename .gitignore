@@ -1,3 +1,4 @@
+*.gms
 *.c
 *.pyd
 *.pyc

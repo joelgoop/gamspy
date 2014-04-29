@@ -2,6 +2,8 @@
 {{ type|upper }}
 {%- for item in items %}
     {{ item.name }}{% if item.indices %}({{ item.indices|join(',') }}){% endif %}
+    {%- if not item.data is none %}
+        / {{ item.data|join(', ') }}/{% endif %}
 {%- endfor %}
 ;
 {%- endmacro %}

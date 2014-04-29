@@ -1,6 +1,5 @@
 from gams import *
 import re
-from ..sqlite_db.db_classes import *
 from csv import writer
 
 # Handle gdx files
@@ -77,62 +76,6 @@ class GdxReader(object):
     def get_var_lower(self,name):
         return self.get_eq_or_var(name,obj_type="variable",field="lower")
 
-    # Insert parameter values into new table in sqlite database
-    def get_parameter_to_sqlite(self,name,keys,types,db_obj):
-        cols = keys+["value"]
-        db_obj.create_table(name,cols,types+["SMALLFLOAT"],include_id=False)
-        param_obj = self.db.get_parameter(name)
-        db_obj.insert_data(name,cols,(tuple(rec.keys)+(rec.value,) for rec in param_obj))
-
-    # Insert variable upper and level values to sqlite db
-    def get_var_level_upper_to_sqlite(self,name,keys,types,db_obj):
-        cols = keys+["level","upper"]
-        db_obj.create_table(name,cols,types+["SMALLFLOAT","SMALLFLOAT"],include_id=False)
-        var_obj = self.db.get_variable(name)
-        db_obj.insert_data(name,cols,(tuple(rec.keys)+(rec.level,rec.upper) for rec in var_obj))
-
-    # Insert variable level values to sqlite db
-    def get_var_level_to_sqlite(self,name,keys,types,db_obj):
-        cols = keys+["level"]
-        db_obj.create_table(name,cols,types+["SMALLFLOAT"],include_id=False)
-        var_obj = self.db.get_variable(name)
-        db_obj.insert_data(name,cols,(tuple(rec.keys)+(rec.level,) for rec in var_obj if rec.level > 0))
-
-    # Insert variable marginal values to sqlite db
-    def get_var_marginal_to_sqlite(self,name,keys,types,db_obj):
-        cols = keys+["level"]
-        db_obj.create_table(name,cols,types+["SMALLFLOAT"],include_id=False)
-        var_obj = self.db.get_variable(name)
-        db_obj.insert_data(name,cols,(tuple(rec.keys)+(rec.level,) for rec in var_obj if rec.marginal > 0))
-
-    # Insert variable level and marginal values to sqlite db
-    def get_var_level_marginal_to_sqlite(self,name,keys,types,db_obj):
-        cols = keys+["level","marginal"]
-        db_obj.create_table(name,cols,types+["SMALLFLOAT","SMALLFLOAT"],include_id=False)
-        var_obj = self.db.get_variable(name)
-        db_obj.insert_data(name,cols,(tuple(rec.keys)+(rec.level,rec.marginal) for rec in var_obj))
-
-    # Insert variable level, upper and marginal values to sqlite db
-    def get_var_all_to_sqlite(self,name,keys,types,db_obj):
-        cols = keys+["level","upper","marginal"]
-        db_obj.create_table(name,cols,types+["SMALLFLOAT","SMALLFLOAT","SMALLFLOAT"],include_id=False)
-        var_obj = self.db.get_variable(name)
-        db_obj.insert_data(name,cols,(tuple(rec.keys)+(rec.level,rec.upper,rec.marginal) for rec in var_obj))
-
-    # Insert equation marginal values to sqlite db
-    def get_eq_marginal_to_sqlite(self,name,keys,types,db_obj):
-        cols = keys+["marginal"]
-        db_obj.create_table(name,cols,types+["SMALLFLOAT"],include_id=False)
-        var_obj = self.db.get_equation(name)
-        db_obj.insert_data(name,cols,(tuple(rec.keys)+(rec.marginal,) for rec in var_obj if rec.marginal > 0))
-
-    # Write variable upper and level values to a csv file
-    def get_var_level_upper_to_csv(self,name,keys,csv_file):
-        w = writer(open(csv_file,'wb'),dialect='excel')
-        cols = keys + ["level","upper"]
-        var_obj = self.db.get_variable(name)
-        w.writerows((tuple(rec.keys)+(rec.level,rec.upper) for rec in var_obj))
-
     # Read symbols and place names in list depending on type
     def get_symbol_names(self):
         self.param_names = []
@@ -184,7 +127,4 @@ if __name__ == '__main__':
     #gdx_file = "D:\\data\\gdxtest\\Exchange_ELIN_EPOD_ClimateMarket121207.gdx"
     #gdx_file = "D:\\data\\gdxtest\\regional_EPOD.gdx"
     gdx_file = "D:\\data\\gdxtest\\regional_EPOD.gdx"
-    db_file = "D:\\data\\gdxtest\\test.db"
-    db_obj = DataBase(db_file)
     gdx_r = GdxReader(gdx_file)
-    gdx_r.get_parameter_to_sqlite("elec_production",["p_no","t","reg"],["INT","INT","TEXT"],db_obj)
