@@ -2,11 +2,19 @@ import numpy as np
 cimport numpy as cnp
 
 
-cpdef object set_from_list(object db,char* name,cnp.ndarray elements):
+cpdef object set_from_1d_array(object db,char* name,cnp.ndarray elements):
     cdef object out_set = db.add_set(name,1,"")
     cdef object element
     for element in elements:
         out_set.add_record(element)
+    return out_set
+
+cpdef object set_from_2d_array(object db,char* name,cnp.ndarray elements):
+    cdef object out_set = db.add_set(name,elements.shape[1],"")
+    cdef cnp.ndarray row
+    for row in elements:
+        print (tuple(row))
+        out_set.add_record(tuple(row))
     return out_set
 
 cpdef object param_from_2d_array(object db,char* name,cnp.ndarray row_set,cnp.ndarray col_set, cnp.ndarray[cnp.float64_t, ndim=2] values):

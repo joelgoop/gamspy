@@ -103,12 +103,22 @@ class GamspyDataElement(GamspyElement):
 class GamspySet(GamspyDataElement):
     """A set in GAMS"""
     def __init__(self, name, data=None, indices=None):
-        if data is not None:
+        if indices is None:
+            self.dim = 1
+        else:
+            self.dim = len(indices)
+        if data is not None and self.dim==1:
             data = map(str,data)
+        else:
+            for i,row in enumerate(data):
+                data[i] = map(str,row)
         super(GamspySet, self).__init__(name,data,indices)
 
     def add_to_db(self,db):
-        gdx.set_from_list(db,self.name,self.data)
+        if self.dim==1:
+            gdx.set_from_1d_array(db,self.name,self.data)
+        else:
+            gdx.set_from_2d_array(db,self.name,self.data)
 
 
 class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):

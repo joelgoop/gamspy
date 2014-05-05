@@ -14,7 +14,10 @@ $offtext
 {%- from "macros_gms.j2" import section_title,render_definitions,render_equations,render_variable_defs %}
 
 {{ section_title("set definitions")}}
-{{ render_definitions("sets",sets.values())}}
+* Sets
+{{ render_definitions("sets",sets.values()|selectattr("indices", "none")) }}
+* Subsets
+{{ render_definitions("sets",sets.values()|rejectattr("indices", "none")) }}
 
 {{ section_title("parameter definitions")}}
 {{ render_definitions("parameters",parameters.values())}}
@@ -23,7 +26,9 @@ $offtext
 $onundf
 $gdxin '{{ gdx_in|replace('/','\\') }}'
 * Load sets
-$load {{ sets.values()|join(',',attribute='no_indices') }}
+$load {{ sets.values()|selectattr("indices", "none")|join(',',attribute='no_indices') }}
+* Load subsets
+$load {{ sets.values()|rejectattr("indices", "none")|join(',',attribute='no_indices') }}
 * Load parameters
 $load {{ parameters.values()|join(',',attribute='no_indices') }}
 $gdxin
