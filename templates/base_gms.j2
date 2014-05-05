@@ -11,19 +11,31 @@ Author: {{ author if author is defined else 'Joel Goop' }}
 {{ description}}
 {%- endif %}
 $offtext
-{%- from "macros_gms.j2" import section_title,render_definitions,render_equations %}
+{%- from "macros_gms.j2" import section_title,render_definitions,render_equations,render_variable_defs %}
 
 {{ section_title("set definitions")}}
-{{ render_definitions("sets",sets)}}
+{{ render_definitions("sets",sets.values())}}
 
 {{ section_title("parameter definitions")}}
-{{ render_definitions("parameters",parameters)}}
+{{ render_definitions("parameters",parameters.values())}}
+
+{{ section_title("load gdx data")}}
+$onundf
+$gdxin '{{ gdx_in|replace('/','\\') }}'
+* Load sets
+$load {{ sets.values()|join(',',attribute='no_indices') }}
+* Load parameters
+$load {{ parameters.values()|join(',',attribute='no_indices') }}
+$gdxin
+$offundf
 
 {{ section_title("variable definitions")}}
-{{ render_definitions("variables",variables)}}
+{{ render_variable_defs(variables)}}
 
 {{ section_title("equation definitions")}}
-{{ render_definitions("equations",equations)}}
+{{ render_definitions("equations",equations.values())}}
 
 {{ section_title("model equations") }}
 {{ render_equations(equations) }}
+
+EXECUTE_UNLOAD '{{ gdx_out|replace('/','\\') }}';

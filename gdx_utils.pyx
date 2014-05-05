@@ -1,6 +1,5 @@
 import numpy as np
 cimport numpy as cnp
-from pylib.xlstools.xls_classes import XlsReader
 
 
 cpdef object set_from_list(object db,char* name,cnp.ndarray elements):

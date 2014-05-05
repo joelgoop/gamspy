@@ -1,7 +1,13 @@
 import copy
 import jinja2
+import numpy as np
+import gdx_utils as gdx
 
 VALID_EQN_OPS = ["=e=","=l=","=g="]
+VALID_V_TYPES = ['positive','binary','free']
+
+def select_vtype(variables,vtype):
+    return [var for var in variables if var.vtype==vtype]
 
 def isnumber(val):
     try:
@@ -9,6 +15,8 @@ def isnumber(val):
     except (ValueError,TypeError):
         return False
     return True
+
+filters = {"select_vtype":select_vtype}
 
 class GamspyArithmeticExpression(object):
     """Gams elements that can be added, subtracted, multiplied and divided to create expressions."""
@@ -64,35 +72,67 @@ class GamspyElement(object):
         self.name = name
         self.indices = indices
 
-    def __str__(self):
-        indices_str = '({})'.format(','.join([index.name for index in self.indices])) if self.indices is not None else ''
+    def __str__(self,show_indices=True):
+        indices_str = '({})'.format(','.join([index.name for index in self.indices])) if (self.indices is not None and show_indices) else ''
         return self.name + indices_str
+
+    @property
+    def no_indices(self):
+        no_ind_elem = copy.copy(self)
+        no_ind_elem.indices = None
+        return no_ind_elem
+
 
 
 class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
     """A variable in GAMS"""
-    def __init__(self, name, indices=None):
+    def __init__(self, name, indices=None, vtype="positive"):
         super(GamspyVariable, self).__init__(name,indices)
+        self.vtype = vtype.lower()
+        if self.vtype not in VALID_V_TYPES:
+            raise ValueError("Variable type {} is unknown.".format(self.vtype))
 
 
 class GamspyDataElement(GamspyElement):
     """A Gams element that can contain data"""
     def __init__(self, name, data=None, indices=None):
         super(GamspyDataElement, self).__init__(name,indices)
-        self.data = data
+        self.data = np.array(data)
 
 
 class GamspySet(GamspyDataElement):
     """A set in GAMS"""
     def __init__(self, name, data=None, indices=None):
+        if data is not None:
+            data = map(str,data)
         super(GamspySet, self).__init__(name,data,indices)
+
+    def add_to_db(self,db):
+        gdx.set_from_list(db,self.name,self.data)
 
 
 class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
     """A parameter in GAMS"""
     def __init__(self, name, data=None, indices=None):
         super(GamspyParameter, self).__init__(name,data,indices)
+        if self.data is not None:
+            self.data = self.data.astype('float64')
 
+    @property
+    def ndim(self):
+        return self.data.ndim - sum([1 if e==1 else 0 for e in self.data.shape])
+
+    @property
+    def data_2d(self):
+        if self.data.ndim==1:
+            return np.atleast_2d(self.data).T
+        return np.atleast_2d(self.data)
+
+    def add_to_db(self,db):
+        if self.ndim == 1:
+            gdx.param_from_1d_array(db,name=self.name, set_list=self.indices[0].data, values=self.data_2d)
+        elif self.ndim == 2:
+            gdx.param_from_2d_array(db,name=self.name, row_set=self.indices[0].data, col_set=self.indices[1].data, values=self.data_2d)
 
 
 class GamspyExpression(GamspyArithmeticExpression):

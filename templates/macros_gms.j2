@@ -1,21 +1,28 @@
 {% macro render_definitions(type,items) -%}
+{%- if items -%}
 {{ type|upper }}
 {%- for item in items %}
     {{ item.name }}{% if item.indices %}({{ item.indices|join(',') }}){% endif %}
-    {%- if not item.data is none %}
-        / {{ item.data|join(', ') }}/{% endif %}
 {%- endfor %}
 ;
+{%- endif %}
+{%- endmacro %}
+
+{% macro render_variable_defs(vars) -%}
+{%- for vtype in ['positive','binary'] -%}
+{{ render_definitions('%s variables' % vtype, vars.values()|select_vtype(vtype)) }}
+{% endfor -%}
+{{ render_definitions('variables', vars.values()|select_vtype("free")) }}
 {%- endmacro %}
 
 {% macro section_title(title) -%}
 *****************************************
 *** {{ title|upper }}
 *****************************************
-{%- endmacro %}
+{%- endmacro -%}
 
 {% macro render_equations(items) -%}
-{%- for item in items %}
+{%- for item in items.values() %}
 {{ item.name }}
 {%- if item.indices %}({{ item.indices|join(',') }}){% endif %}..
     {{ item|string }};
