@@ -144,6 +144,14 @@ class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
         elif self.ndim == 2:
             gdx.param_from_2d_array(db,name=self.name, row_set=self.indices[0].data, col_set=self.indices[1].data, values=self.data_2d)
 
+    def create_from_series(self,series,idx_set):
+        self.data = series.values.astype('float64')
+        self.indices = [GamspySet(name=idx_set.name,data=series.index.values)]
+
+    def create_from_dataframe(self,df,row_set,col_set):
+        self.data = df.values.astype('float64')
+        self.indices = [GamspySet(name=row_set.name,data=df.index.values),GamspySet(name=col_set.name,data=df.columns.values)]
+
 
 class GamspyExpression(GamspyArithmeticExpression):
     """A GAMS expression tree"""

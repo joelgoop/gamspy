@@ -13,7 +13,6 @@ cpdef object set_from_2d_array(object db,char* name,cnp.ndarray elements):
     cdef object out_set = db.add_set(name,elements.shape[1],"")
     cdef cnp.ndarray row
     for row in elements:
-        print (tuple(row))
         out_set.add_record(tuple(row))
     return out_set
 

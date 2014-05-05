@@ -1,6 +1,6 @@
-{%- if title is defined -%}
+{% if title is defined and not title is none -%}
 $title {{ title }}
-{% endif %}
+{%- endif %}
 $ontext
 {%- if title is defined %}
 Title: {{ title }}

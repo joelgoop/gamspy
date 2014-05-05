@@ -2,7 +2,7 @@
 {%- if items -%}
 {{ type|upper }}
 {%- for item in items %}
-    {{ item.name }}{% if item.indices %}({{ item.indices|join(',') }}){% endif %}
+    {{ item|string }}
 {%- endfor %}
 ;
 {%- endif %}
