@@ -58,6 +58,10 @@ class GamspyArithmeticExpression(object):
 
     def __lt__(self,other):
         return GamspyEquationExpression('=l=',self,other)
+    def __gt__(self,other):
+        return GamspyEquationExpression('=g=',self,other)
+    def __eq__(self,other):
+        return GamspyEquationExpression('=e=',self,other)
 
     def parenthesized(self):
         new_element = copy.copy(self)
@@ -81,6 +85,11 @@ class GamspyElement(object):
         no_ind_elem = copy.copy(self)
         no_ind_elem.indices = None
         return no_ind_elem
+
+    def with_indices(self,*indices):
+        new_ind_elem = copy.copy(self)
+        new_ind_elem.indices = indices
+        return new_ind_elem
 
 
 

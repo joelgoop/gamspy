@@ -2,7 +2,7 @@
 {%- if items -%}
 {{ type|upper }}
 {%- for item in items %}
-    {{ item|string }}
+    {{ item.name }}{% if item.indices %}({{ item.indices|join(',',attribute='name') }}){% endif %}
 {%- endfor %}
 ;
 {%- endif %}
@@ -22,7 +22,7 @@
 {%- endmacro -%}
 
 {% macro render_equations(items) -%}
-{%- for item in items.values() %}
+{%- for item in items.values() -%}
 {{ item.name }}
 {%- if item.indices %}({{ item.indices|join(',') }}){% endif %}..
     {{ item|string }};

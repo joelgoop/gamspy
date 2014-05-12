@@ -1,4 +1,4 @@
-{% if title is defined and not title is none -%}
+{% if title -%}
 $title {{ title }}
 {%- endif %}
 $ontext
@@ -43,4 +43,14 @@ $offundf
 {{ section_title("model equations") }}
 {{ render_equations(equations) }}
 
+{% block model_def %}MODEL {{ name }} / all /;{% endblock %}
+
+{% for op,val in options.items() -%}
+{{ name }}.{{ op }} = {{ val }};
+{% endfor %}
+
+{% block solve %}SOLVE {{ name }} using {{ type }} {% if maximize %}maximizing{% else %}minimizing{% endif %} {{ obj_var.name }};{% endblock %}
+
+{% if gdx_out -%}
 EXECUTE_UNLOAD '{{ gdx_out|replace('/','\\') }}';
+{%- endif %}

@@ -11,6 +11,8 @@ from .types import *
 class GamspyModel(object):
     """Class that contains necessary data to run a GAMS model"""
     def __init__(self, title=None,
+                    name=None,
+                    options = None,
                     model_file='D:/data/wedd_v2/wedd2_test.gms',
                     data_file='D:/data/wedd_v2/data.gdx',
                     out_file='D:/data/wedd_v2/results.gdx',
@@ -23,6 +25,13 @@ class GamspyModel(object):
         self.out_file = out_file
         self.model_dir,self.model_file = os.path.split(os.path.abspath(model_file))
         self.title = title
+        self.name = name
+        if options is None:
+            self.options = {"optcr": 1e-4, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000}
+        else:
+            self.options = options
+        self.maximize = False
+        self.model_type = "lp"
 
         self.template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 
@@ -42,10 +51,18 @@ class GamspyModel(object):
         db = ws.add_database()
         for s in self.sets.values():
             print "Adding set: {}".format(s.name)
-            s.add_to_db(db)
+            try:
+                s.add_to_db(db)
+            except Exception:
+                print s
+                raise
         for p in self.parameters.values():
             print "Adding parameter: {}".format(p.name)
-            p.add_to_db(db)
+            try:
+                p.add_to_db(db)
+            except Exception:
+                print p
+                raise
         db.export(self.data_file)
 
     def write_model_file(self):
@@ -54,11 +71,16 @@ class GamspyModel(object):
         template = env.get_template('base_gms.j2')
 
         context = {
+            "name": self.name,
+            "type": self.model_type,
             "title": self.title,
+            "options": self.options,
             "sets": self.sets,
             "parameters": self.parameters,
             "variables": self.variables,
             "equations": self.equations,
+            "obj_var": self.obj_var,
+            "maximize": self.maximize,
             "gdx_in": self.data_file,
             "gdx_out": self.out_file
         }
