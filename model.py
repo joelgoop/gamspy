@@ -1,4 +1,5 @@
 import os
+import operator
 import subprocess as sp
 import threading
 import jinja2
@@ -49,7 +50,7 @@ class GamspyModel(object):
     def write_data_file(self):
         ws = gams.GamsWorkspace()
         db = ws.add_database()
-        for s in self.sets.values():
+        for s in sorted(self.sets.values(), key=operator.attrgetter('level')):
             print "Adding set: {}".format(s.name)
             try:
                 s.add_to_db(db)

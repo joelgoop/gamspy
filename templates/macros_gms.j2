@@ -1,3 +1,4 @@
+{# Render general definition #}
 {% macro render_definitions(type,items) -%}
 {%- if items -%}
 {{ type|upper }}
@@ -8,6 +9,7 @@
 {%- endif %}
 {%- endmacro %}
 
+{# Render variable definitions including type #}
 {% macro render_variable_defs(vars) -%}
 {%- for vtype in ['positive','binary'] -%}
 {{ render_definitions('%s variables' % vtype, vars.values()|select_vtype(vtype)) }}
@@ -15,16 +17,28 @@
 {{ render_definitions('variables', vars.values()|select_vtype("free")) }}
 {%- endmacro %}
 
+{# Render limits for variables #}
+{% macro render_variable_lims(vars) -%}
+{%- for lim in ['up','lo','l','fx'] -%}
+{%- for var in vars.values()|rejectattr(lim,"none") -%}
+{{ var.name }}.{{ lim }}{% if var.indices %}({{ var.indices|join(',',attribute='name') }}){% endif %} = {{ var|attr(lim) }};
+{% endfor -%}
+{% endfor -%}
+{%- endmacro %}
+
+{# Render a comment with section title #}
 {% macro section_title(title) -%}
 *****************************************
 *** {{ title|upper }}
 *****************************************
 {%- endmacro -%}
 
+{# Render equations #}
 {% macro render_equations(items) -%}
 {%- for item in items.values() -%}
 {{ item.name }}
-{%- if item.indices %}({{ item.indices|join(',') }}){% endif %}..
+{%- if item.indices %}({{ item.indices|join(',',attribute='no_indices') }}){% endif %}..
     {{ item|string }};
-{%- endfor %}
+
+{% endfor %}
 {%- endmacro %}

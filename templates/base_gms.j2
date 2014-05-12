@@ -11,7 +11,7 @@ Author: {{ author if author is defined else 'Joel Goop' }}
 {{ description}}
 {%- endif %}
 $offtext
-{%- from "macros_gms.j2" import section_title,render_definitions,render_equations,render_variable_defs %}
+{%- from "macros_gms.j2" import section_title,render_definitions,render_equations,render_variable_defs,render_variable_lims %}
 
 {{ section_title("set definitions")}}
 * Sets
@@ -36,6 +36,9 @@ $offundf
 
 {{ section_title("variable definitions")}}
 {{ render_variable_defs(variables)}}
+
+{{ section_title("variable limits")}}
+{{ render_variable_lims(variables)}}
 
 {{ section_title("equation definitions")}}
 {{ render_definitions("equations",equations.values())}}

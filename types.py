@@ -95,11 +95,15 @@ class GamspyElement(object):
 
 class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
     """A variable in GAMS"""
-    def __init__(self, name, indices=None, vtype="positive"):
+    def __init__(self, name, indices=None, vtype="positive",up=None,lo=None,l=None,fx=None):
         super(GamspyVariable, self).__init__(name,indices)
         self.vtype = vtype.lower()
         if self.vtype not in VALID_V_TYPES:
             raise ValueError("Variable type {} is unknown.".format(self.vtype))
+        self.up = up
+        self.lo = lo
+        self.l = l
+        self.fx = fx
 
 
 class GamspyDataElement(GamspyElement):
@@ -122,6 +126,7 @@ class GamspySet(GamspyDataElement):
             for i,row in enumerate(data):
                 data[i] = map(str,row)
         super(GamspySet, self).__init__(name,data,indices)
+        self.level = 0 if indices is None else 1 + max(i.level for i in self.indices)
 
     def add_to_db(self,db):
         if self.dim==1:
@@ -152,6 +157,8 @@ class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
             gdx.param_from_1d_array(db,name=self.name, set_list=self.indices[0].data, values=self.data_2d)
         elif self.ndim == 2:
             gdx.param_from_2d_array(db,name=self.name, row_set=self.indices[0].data, col_set=self.indices[1].data, values=self.data_2d)
+        else:
+            raise ValueError('Cannot add data with more than 2 dimensions to GAMS db.')
 
     def create_from_series(self,series,idx_set):
         self.data = series.values.astype('float64')
@@ -188,10 +195,10 @@ class GamspyFunctionTypeExpression(GamspyExpression):
     def __str__(self):
         return '{}({})'.format(self.funcname,','.join(map(str,self.args)))
 
-def gams_sum(over_set,arg):
-    return GamspyFunctionTypeExpression('sum',(over_set.name,arg))
-def gams_prod(over_set,arg):
-    return GamspyFunctionTypeExpression('prod',(over_set.name,arg))
+def gams_sum(over_sets,arg):
+    return GamspyFunctionTypeExpression('sum',('({})'.format(','.join((s.name for s in over_sets))),arg))
+def gams_prod(over_sets,arg):
+    return GamspyFunctionTypeExpression('prod',('({})'.format(','.join((s.name for s in over_sets))),arg))
 
 class GamspyEquationExpression(GamspyExpression):
     """An expression for an equation in Gams."""
