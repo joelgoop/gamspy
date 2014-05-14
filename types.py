@@ -195,10 +195,15 @@ class GamspyFunctionTypeExpression(GamspyExpression):
     def __str__(self):
         return '{}({})'.format(self.funcname,','.join(map(str,self.args)))
 
-def gams_sum(over_sets,arg):
-    return GamspyFunctionTypeExpression('sum',('({})'.format(','.join((s.name for s in over_sets))),arg))
-def gams_prod(over_sets,arg):
-    return GamspyFunctionTypeExpression('prod',('({})'.format(','.join((s.name for s in over_sets))),arg))
+def func_over_sets(func,over_sets,arg,conditional=None):
+    over_sets_arg = '({})'.format(','.join((s.name for s in over_sets)))
+    if conditional is not None:
+        over_sets_arg += '$({})'.format(conditional)
+    return GamspyFunctionTypeExpression(func,(over_sets_arg,arg))
+def gams_sum(*args,**kwargs):
+    return func_over_sets('sum',*args,**kwargs)
+def gams_prod(*args,**kwargs):
+    return func_over_sets('prod',*args,**kwargs)
 
 class GamspyEquationExpression(GamspyExpression):
     """An expression for an equation in Gams."""
