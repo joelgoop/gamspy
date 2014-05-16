@@ -18,10 +18,10 @@ def isnumber(val):
 
 filters = {"select_vtype":select_vtype}
 
-class GamspyArithmeticExpression(object):
-    """Gams elements that can be added, subtracted, multiplied and divided to create expressions."""
-    def __init__(self,parenthesis=False):
-        super(GamspyArithmeticExpression,self).__init__()
+class GamspyAddSubExpression(object):
+    """Gams elements that can be added or subtracted to create expressions"""
+    def __init__(self, parenthesis=False):
+        super(GamspyAddSubExpression, self).__init__()
         self.parenthesis = parenthesis
 
     def __add__(self,other):
@@ -34,6 +34,22 @@ class GamspyArithmeticExpression(object):
         if not isinstance(other,GamspyArithmeticExpression):
             raise ValueError('Arithmetic not allowed on instance of {}.'.format(other.__class__.__name__))
         return GamspyExpression('-',self,other.parenthesized())
+    def __radd__(self,other):
+        return GamspyExpression(str(other))+self
+    def __rsub__(self,other):
+        return GamspyExpression(str(other))-self
+
+    def parenthesized(self):
+        new_element = copy.copy(self)
+        new_element.parenthesis = True
+        return new_element
+
+
+class GamspyArithmeticExpression(GamspyAddSubExpression):
+    """Gams elements that can be added, subtracted, multiplied and divided to create expressions."""
+    def __init__(self,**kwargs):
+        super(GamspyArithmeticExpression,self).__init__(**kwargs)
+
     def __div__(self,other):
         if isnumber(other):
             return GamspyExpression('/',self.parenthesized(),other)
@@ -46,11 +62,6 @@ class GamspyArithmeticExpression(object):
         if not isinstance(other,GamspyArithmeticExpression):
             raise ValueError('Arithmetic not allowed on instance of {}.'.format(other.__class__.__name__))
         return GamspyExpression('*',self.parenthesized(),other.parenthesized())
-
-    def __radd__(self,other):
-        return GamspyExpression(str(other))+self
-    def __rsub__(self,other):
-        return GamspyExpression(str(other))-self
     def __rmul__(self,other):
         return GamspyExpression(str(other))*self
     def __rdiv__(self,other):
@@ -63,10 +74,6 @@ class GamspyArithmeticExpression(object):
     def __eq__(self,other):
         return GamspyEquationExpression('=e=',self,other)
 
-    def parenthesized(self):
-        new_element = copy.copy(self)
-        new_element.parenthesis = True
-        return new_element
 
 
 class GamspyElement(object):
@@ -103,7 +110,7 @@ class GamspyElement(object):
             return self.with_indices(*indices)
 
 
-class GamspyAlias(GamspyElement):
+class GamspyAlias(GamspyElement,GamspyArithmeticExpression):
     """An alias in GAMS"""
     def __init__(self, name, aliasof):
         super(GamspyAlias, self).__init__(name=name)
@@ -111,8 +118,6 @@ class GamspyAlias(GamspyElement):
 
     def __getattr__(self,attr):
         return self.aliasof.__getattribute__(attr)
-
-
 
 class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
     """A variable in GAMS"""
@@ -126,7 +131,6 @@ class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
         self.l = l
         self.fx = fx
 
-
 class GamspyDataElement(GamspyElement):
     """A Gams element that can contain data"""
     def __init__(self, name, data=None, indices=None):
@@ -134,7 +138,7 @@ class GamspyDataElement(GamspyElement):
         self.data = np.array(data)
 
 
-class GamspySet(GamspyDataElement):
+class GamspySet(GamspyDataElement,GamspyAddSubExpression):
     """A set in GAMS"""
     def __init__(self, name, data=None, indices=None, aliasof=None):
         if indices is None:
@@ -154,7 +158,6 @@ class GamspySet(GamspyDataElement):
             gdx.set_from_1d_array(db,self.name,self.data)
         else:
             gdx.set_from_2d_array(db,self.name,self.data)
-
 
 class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
     """A parameter in GAMS"""
