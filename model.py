@@ -73,10 +73,10 @@ class GamspyModel(object):
                 raise
         db.export(self.data_file)
 
-    def write_model_file(self):
+    def write_model_file(self,template='base_gms.j2'):
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_dir))
         env.filters.update(filters)
-        template = env.get_template('base_gms.j2')
+        template = env.get_template(template)
 
         context = {
             "name": self.name,
