@@ -84,13 +84,16 @@ class GamspyElement(object):
         self.indices = indices
 
     def __str__(self,show_indices=True):
-        try:
-            indices_str = '({})'.format(','.join([index.name for index in self.indices])) if (self.indices is not None and show_indices) else ''
-        except:
-            print "Indices are {}".format(self.indices)
-            exit()
-
-        return self.name + indices_str
+        if show_indices and self.indices is not None:
+            ind_list = []
+            for ind in self.indices:
+                try:
+                    ind_list.append(str(ind.no_indices))
+                except AttributeError:
+                    ind_list.append(str(ind))
+            return self.name + '({})'.format(','.join(ind_list))
+        else:
+            return self.name
 
     @property
     def no_indices(self):
