@@ -62,6 +62,8 @@ $offundf
 
 {% block solve %}SOLVE {{ name }} using {{ model_type }} {% if maximize %}maximizing{% else %}minimizing{% endif %} {{ obj_var.name }};{% endblock %}
 
+{% block dump %}
 {% if out_file -%}
 EXECUTE_UNLOAD '{{ out_file|replace('/','\\') }}';
 {%- endif %}
+{% endblock %}
