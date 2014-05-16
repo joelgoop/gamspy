@@ -1,28 +1,31 @@
-{% if title -%}
+{%- if title %}
 $title {{ title }}
 {%- endif %}
 $ontext
-{%- if title is defined %}
+{%- if title %}
 Title: {{ title }}
 {%- endif %}
-Author: {{ author if author is defined else 'Joel Goop' }}
+Author: {{ author if author else 'Joel Goop' }}
 {%- if description is defined %}
 
 {{ description}}
 {%- endif %}
 $offtext
-{%- from "macros_gms.j2" import section_title,render_definitions,render_equations,render_variable_defs,render_variable_lims %}
+{%- import "macros_gms.j2" as macros %}
 
-{{ section_title("set definitions")}}
+{{ macros.section_title("set definitions")}}
 * Sets
-{{ render_definitions("sets",sets.values()|selectattr("indices", "none")) }}
+{{ macros.render_definitions("sets",sets.values()|selectattr("indices", "none")) }}
+* Aliases
+{{ macros.render_aliases(aliases.values()) }}
 * Subsets
-{{ render_definitions("sets",sets.values()|rejectattr("indices", "none")) }}
+{{ macros.render_definitions("sets",sets.values()|rejectattr("indices", "none")) }}
 
-{{ section_title("parameter definitions")}}
-{{ render_definitions("parameters",parameters.values())}}
 
-{{ section_title("load gdx data")}}
+{{ macros.section_title("parameter definitions")}}
+{{ macros.render_definitions("parameters",parameters.values())}}
+
+{{ macros.section_title("load gdx data")}}
 $onundf
 $gdxin '{{ gdx_in|replace('/','\\') }}'
 * Load sets
@@ -34,17 +37,17 @@ $load {{ parameters.values()|join(',',attribute='no_indices') }}
 $gdxin
 $offundf
 
-{{ section_title("variable definitions")}}
-{{ render_variable_defs(variables)}}
+{{ macros.section_title("variable definitions")}}
+{{ macros.render_variable_defs(variables)}}
 
-{{ section_title("variable limits")}}
-{{ render_variable_lims(variables)}}
+{{ macros.section_title("variable limits")}}
+{{ macros.render_variable_lims(variables)}}
 
-{{ section_title("equation definitions")}}
-{{ render_definitions("equations",equations.values())}}
+{{ macros.section_title("equation definitions")}}
+{{ macros.render_definitions("equations",equations.values())}}
 
-{{ section_title("model equations") }}
-{{ render_equations(equations) }}
+{{ macros.section_title("model equations") }}
+{{ macros.render_equations(equations) }}
 
 {% block model_def %}MODEL {{ name }} / all /;{% endblock %}
 

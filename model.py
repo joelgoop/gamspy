@@ -36,6 +36,13 @@ class GamspyModel(object):
 
         self.template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 
+        self.sets = {}
+        self.aliases = {}
+        self.parameters = {}
+        self.variables = {}
+        self.equations = {}
+
+
     def create_thread(self):
         return threading.Thread(target=self.run_model)
 
@@ -82,6 +89,7 @@ class GamspyModel(object):
             "equations": self.equations,
             "obj_var": self.obj_var,
             "maximize": self.maximize,
+            "aliases": self.aliases,
             "gdx_in": self.data_file,
             "gdx_out": self.out_file
         }

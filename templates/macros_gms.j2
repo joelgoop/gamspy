@@ -37,8 +37,15 @@
 {% macro render_equations(items) -%}
 {%- for item in items.values() -%}
 {{ item.name }}
-{%- if item.indices %}({{ item.indices|join(',',attribute='no_indices') }}){% endif %}..
+{%- if item.indices %}({{ item.indices|join(',',attribute='no_indices') }}){% endif %}{% if item.conditional %}$({{ item.conditional|string }}){% endif %}..
     {{ item|string }};
 
 {% endfor %}
+{%- endmacro %}
+
+{# Render aliases #}
+{% macro render_aliases(items) %}
+{%- for item in items -%}
+ALIAS({{ item.aliasof.no_indices }},{{ item.name }});
+{%- endfor %}
 {%- endmacro %}

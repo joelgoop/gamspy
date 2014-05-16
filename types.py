@@ -77,7 +77,12 @@ class GamspyElement(object):
         self.indices = indices
 
     def __str__(self,show_indices=True):
-        indices_str = '({})'.format(','.join([index.name for index in self.indices])) if (self.indices is not None and show_indices) else ''
+        try:
+            indices_str = '({})'.format(','.join([index.name for index in self.indices])) if (self.indices is not None and show_indices) else ''
+        except:
+            print "Indices are {}".format(self.indices)
+            exit()
+
         return self.name + indices_str
 
     @property
@@ -90,6 +95,22 @@ class GamspyElement(object):
         new_ind_elem = copy.copy(self)
         new_ind_elem.indices = indices
         return new_ind_elem
+
+    def ix(self,*indices):
+        if not indices:
+            return self.no_indices
+        else:
+            return self.with_indices(*indices)
+
+
+class GamspyAlias(GamspyElement):
+    """An alias in GAMS"""
+    def __init__(self, name, aliasof):
+        super(GamspyAlias, self).__init__(name=name)
+        self.aliasof = aliasof
+
+    def __getattr__(self,attr):
+        return self.aliasof.__getattribute__(attr)
 
 
 
@@ -115,7 +136,7 @@ class GamspyDataElement(GamspyElement):
 
 class GamspySet(GamspyDataElement):
     """A set in GAMS"""
-    def __init__(self, name, data=None, indices=None):
+    def __init__(self, name, data=None, indices=None, aliasof=None):
         if indices is None:
             self.dim = 1
         else:
@@ -216,10 +237,11 @@ class GamspyEquationExpression(GamspyExpression):
 
 class GamspyEquation(GamspyElement):
     """A Gams 'equation', i.e. equality or inequality."""
-    def __init__(self, name, expr, indices=None):
+    def __init__(self, name, expr, indices=None,conditional=None):
         super(GamspyEquation, self).__init__(name,indices)
         self.name = name
         self.indices = indices
+        self.conditional = conditional
         self.expr = expr
 
     def __str__(self):
