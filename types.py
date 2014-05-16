@@ -138,7 +138,15 @@ class GamspyDataElement(GamspyElement):
     """A Gams element that can contain data"""
     def __init__(self, name, data=None, indices=None):
         super(GamspyDataElement, self).__init__(name,indices)
-        self.data = np.array(data)
+        self.data = data
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self,data):
+        self._data = np.array(data)
 
 
 class GamspySet(GamspyDataElement,GamspyAddSubExpression):
@@ -148,13 +156,20 @@ class GamspySet(GamspyDataElement,GamspyAddSubExpression):
             self.dim = 1
         else:
             self.dim = len(indices)
+        super(GamspySet, self).__init__(name,self.prepare_data(data),indices)
+        self.level = 0 if indices is None else 1 + max(i.level for i in self.indices)
+
+    @GamspyDataElement.data.setter
+    def data(self,data):
+        self._data = np.array(self.prepare_data(data))
+
+    def prepare_data(self,data):
         if data is not None and self.dim==1:
             data = map(str,data)
-        else:
+        elif data is not None:
             for i,row in enumerate(data):
                 data[i] = map(str,row)
-        super(GamspySet, self).__init__(name,data,indices)
-        self.level = 0 if indices is None else 1 + max(i.level for i in self.indices)
+        return data
 
     def add_to_db(self,db):
         if self.dim==1:

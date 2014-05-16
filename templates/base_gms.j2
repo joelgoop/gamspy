@@ -13,6 +13,7 @@ Author: {{ author if author else 'Joel Goop' }}
 $offtext
 {%- import "macros_gms.j2" as macros %}
 
+{% block set_def %}
 {{ macros.section_title("set definitions")}}
 * Sets
 {{ macros.render_definitions("sets",sets.values()|selectattr("indices", "none")) }}
@@ -20,14 +21,17 @@ $offtext
 {{ macros.render_aliases(aliases.values()) }}
 * Subsets
 {{ macros.render_definitions("sets",sets.values()|rejectattr("indices", "none")) }}
+{% endblock %}
 
-
+{% block param_def %}
 {{ macros.section_title("parameter definitions")}}
 {{ macros.render_definitions("parameters",parameters.values())}}
+{% endblock %}
 
+{% block gdx_load %}
 {{ macros.section_title("load gdx data")}}
 $onundf
-$gdxin '{{ gdx_in|replace('/','\\') }}'
+$gdxin '{{ data_file|replace('/','\\') }}'
 * Load sets
 $load {{ sets.values()|selectattr("indices", "none")|join(',',attribute='no_indices') }}
 * Load subsets
@@ -36,6 +40,7 @@ $load {{ sets.values()|rejectattr("indices", "none")|join(',',attribute='no_indi
 $load {{ parameters.values()|join(',',attribute='no_indices') }}
 $gdxin
 $offundf
+{% endblock %}
 
 {{ macros.section_title("variable definitions")}}
 {{ macros.render_variable_defs(variables)}}
@@ -55,8 +60,8 @@ $offundf
 {{ name }}.{{ op }} = {{ val }};
 {% endfor %}
 
-{% block solve %}SOLVE {{ name }} using {{ type }} {% if maximize %}maximizing{% else %}minimizing{% endif %} {{ obj_var.name }};{% endblock %}
+{% block solve %}SOLVE {{ name }} using {{ model_type }} {% if maximize %}maximizing{% else %}minimizing{% endif %} {{ obj_var.name }};{% endblock %}
 
-{% if gdx_out -%}
-EXECUTE_UNLOAD '{{ gdx_out|replace('/','\\') }}';
+{% if out_file -%}
+EXECUTE_UNLOAD '{{ out_file|replace('/','\\') }}';
 {%- endif %}

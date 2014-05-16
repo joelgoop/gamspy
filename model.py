@@ -34,7 +34,7 @@ class GamspyModel(object):
         self.maximize = False
         self.model_type = "lp"
 
-        self.template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+        self.template_dirs = [os.path.join(os.path.dirname(__file__), 'templates')]
 
         self.sets = {}
         self.aliases = {}
@@ -74,28 +74,12 @@ class GamspyModel(object):
         db.export(self.data_file)
 
     def write_model_file(self,template='base_gms.j2'):
-        env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_dir))
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_dirs))
         env.filters.update(filters)
         template = env.get_template(template)
 
-        context = {
-            "name": self.name,
-            "type": self.model_type,
-            "title": self.title,
-            "options": self.options,
-            "sets": self.sets,
-            "parameters": self.parameters,
-            "variables": self.variables,
-            "equations": self.equations,
-            "obj_var": self.obj_var,
-            "maximize": self.maximize,
-            "aliases": self.aliases,
-            "gdx_in": self.data_file,
-            "gdx_out": self.out_file
-        }
-
         with open(os.path.join(self.model_dir,self.model_file),'w') as f:
-            f.write(template.render(context))
+            f.write(template.render(self.__dict__))
 
 
 if __name__ == '__main__':
