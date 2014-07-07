@@ -1,6 +1,6 @@
 # gamspy
 
-Build and run GAMS models from python
+Build and run GAMS models from python.
 
 ## Aim of the project
 
