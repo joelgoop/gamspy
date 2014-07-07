@@ -3,4 +3,5 @@
 *.pyd
 *.pyc
 build/
+tmp/
 *.sublime-*

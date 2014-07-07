@@ -1,5 +1,6 @@
 {# Render general definition #}
 {% macro render_definitions(type,items) -%}
+{% set items = items|list %}
 {%- if items -%}
 {{ type|upper }}
 {%- for item in items %}

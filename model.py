@@ -7,17 +7,15 @@ import gams
 import gdx_utils as gdx
 from .types import *
 
-
-
 class GamspyModel(object):
     """Class that contains necessary data to run a GAMS model"""
-    def __init__(self, title=None,
+    def __init__(self, model_file,
+                    data_file,
+                    out_file,
+                    title=None,
                     name=None,
                     options = None,
-                    model_file='D:/data/wedd_v2/wedd2_test.gms',
-                    data_file='D:/data/wedd_v2/data.gdx',
-                    out_file='D:/data/wedd_v2/results.gdx',
-                    gams_exec='C:/GAMS/win64/23.9/gams.exe'):
+                    gams_exec='C:/GAMS/win64/23.8/gams.exe'):
         super(GamspyModel, self).__init__()
         if not os.path.isfile(gams_exec):
             raise ValueError("File {} is not a file.".format(gams_exec))

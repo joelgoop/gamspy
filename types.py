@@ -1,7 +1,7 @@
 import copy
 import jinja2
 import numpy as np
-import gdx_utils as gdx
+import gdx_utils
 
 VALID_EQN_OPS = ["=e=","=l=","=g="]
 VALID_V_TYPES = ['positive','binary','free']
@@ -173,9 +173,9 @@ class GamspySet(GamspyDataElement,GamspyAddSubExpression):
 
     def add_to_db(self,db):
         if self.dim==1:
-            gdx.set_from_1d_array(db,self.name,self.data)
+            gdx_utils.set_from_1d_array(db,self.name,self.data)
         else:
-            gdx.set_from_2d_array(db,self.name,self.data)
+            gdx_utils.set_from_2d_array(db,self.name,self.data)
 
 class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
     """A parameter in GAMS"""
@@ -196,9 +196,9 @@ class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
 
     def add_to_db(self,db):
         if self.ndim == 1:
-            gdx.param_from_1d_array(db,name=self.name, set_list=self.indices[0].data, values=self.data_2d)
+            gdx_utils.param_from_1d_array(db,name=self.name, set_list=self.indices[0].data, values=self.data_2d)
         elif self.ndim == 2:
-            gdx.param_from_2d_array(db,name=self.name, row_set=self.indices[0].data, col_set=self.indices[1].data, values=self.data_2d)
+            gdx_utils.param_from_2d_array(db,name=self.name, row_set=self.indices[0].data, col_set=self.indices[1].data, values=self.data_2d)
         else:
             raise ValueError('Cannot add data with more than 2 dimensions to GAMS db.')
 
