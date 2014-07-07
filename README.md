@@ -10,7 +10,7 @@ So far, the project has only been tested for my own very specific needs and much
 
 ## Installation
 
-If you have the dependencies installed, you only need to `git clone` and compile the `cython` module `gdx_utils`.
+If you have the dependencies installed, you only need to `git clone` and compile the `cython` module `gdx_utils`. I have added the batch file (`cython.bat`) that I use on Windows 7 x64 for 64-bit Python, but you may have to adapt it to your own environment.
 
 ## Dependencies
 
