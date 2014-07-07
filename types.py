@@ -18,6 +18,7 @@ def isnumber(val):
 
 filters = {"select_vtype":select_vtype}
 
+
 class GamspyAddSubExpression(object):
     """Gams elements that can be added or subtracted to create expressions"""
     def __init__(self, parenthesis=False):
@@ -75,7 +76,6 @@ class GamspyArithmeticExpression(GamspyAddSubExpression):
         return GamspyEquationExpression('=e=',self,other)
 
 
-
 class GamspyElement(object):
     """Gams elements such as a set or parameter"""
     def __init__(self, name, indices=None):
@@ -122,6 +122,7 @@ class GamspyAlias(GamspyElement,GamspyArithmeticExpression):
     def __getattr__(self,attr):
         return self.aliasof.__getattribute__(attr)
 
+
 class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
     """A variable in GAMS"""
     def __init__(self, name, indices=None, vtype="positive",up=None,lo=None,l=None,fx=None):
@@ -133,6 +134,7 @@ class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
         self.lo = lo
         self.l = l
         self.fx = fx
+
 
 class GamspyDataElement(GamspyElement):
     """A Gams element that can contain data"""
@@ -176,6 +178,7 @@ class GamspySet(GamspyDataElement,GamspyAddSubExpression):
             gdx_utils.set_from_1d_array(db,self.name,self.data)
         else:
             gdx_utils.set_from_2d_array(db,self.name,self.data)
+
 
 class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
     """A parameter in GAMS"""
@@ -237,6 +240,7 @@ class GamspyFunctionTypeExpression(GamspyExpression):
     def __str__(self):
         return '{}({})'.format(self.funcname,','.join(map(str,self.args)))
 
+
 def func_over_sets(func,over_sets,arg,conditional=None):
     over_sets_arg = '({})'.format(','.join((s.name for s in over_sets)))
     if conditional is not None:
@@ -247,13 +251,13 @@ def gams_sum(*args,**kwargs):
 def gams_prod(*args,**kwargs):
     return func_over_sets('prod',*args,**kwargs)
 
+
 class GamspyEquationExpression(GamspyExpression):
     """An expression for an equation in Gams."""
     def __init__(self, current, left, right):
         super(GamspyEquationExpression, self).__init__(current, left, right)
         if current not in VALID_EQN_OPS:
             raise ValueError('{} is not a valid operator in an equation.'.format(current))
-
 
 
 class GamspyEquation(GamspyElement):
@@ -267,28 +271,3 @@ class GamspyEquation(GamspyElement):
 
     def __str__(self):
         return str(self.expr)
-
-
-if __name__ == '__main__':
-    i = GamspySet('i')
-    t = GamspySet('t')
-    s = GamspySet('tt',indices=[i])
-    p1 = GamspyParameter('p1',indices=[i,t])
-    p2 = GamspyParameter('p2',indices=[i,t])
-    x = GamspyVariable('x',indices=[i,t])
-    y = GamspyVariable('y',indices=[i,t])
-
-    eq1 = GamspyEquation('eq1',(p1*x/(x+y) + p2*x*y < 2*x/p2),indices=[i,t])
-
-    context = {
-        "title": "Test model",
-        "sets": [i,t,s],
-        "parameters": [p1,p2],
-        "variables": [x,y],
-        "equations": [eq1]
-    }
-
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'))
-    template = env.get_template('base_gms.j2')
-
-    print template.render(context)

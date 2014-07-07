@@ -78,23 +78,3 @@ class GamspyModel(object):
 
         with open(os.path.join(self.model_dir,self.model_file),'w') as f:
             f.write(template.render(self.__dict__))
-
-
-if __name__ == '__main__':
-    m = GamspyModel(gams_exec='C:/GAMS/win64/23.8/gams.exe')
-    i = GamspySet('i',data=['test','test2','test3'])
-    t = GamspySet('t')
-    s = GamspySet('tt',indices=[i])
-    p1 = GamspyParameter('p1',indices=[i,t])
-    p2 = GamspyParameter('p2',indices=[i,t])
-    x = GamspyVariable('x',indices=[i,t])
-    y = GamspyVariable('y',indices=[i,t])
-
-    eq1 = GamspyEquation('eq1',(p1*x/(x+y) + p2*x*y < 2*x/p2),indices=[i,t])
-
-    m.sets = [i,t,s]
-    m.parameters = [p1,p2]
-    m.variables = [x,y]
-    m.equations = [eq1]
-    print "Generating file."
-    m.write_model_file('test.gms')
