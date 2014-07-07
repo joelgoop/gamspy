@@ -24,6 +24,8 @@ In order to run the code you need the following packages (in addition to Python 
 *   `jinja2` templating engine for writing the `GAMS` code
 *   `numpy` for handling matrices 
 *   `cython` to install the `gdx_utils` module, which efficiently parses data retrieved from `GDX` files
+*   You will also need the Python API package included with newer `GAMS` releases
+
 
 
 ## Licensing 
