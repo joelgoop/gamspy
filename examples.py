@@ -18,8 +18,8 @@
 # USAGE
 #
 # This file can be run with "python -m gamspy.examples" from directory level
-# above. You can also by importing the transport example and running it from
-# somewhere else:
+# above. You can also run the example by importing the transport example and
+# running it from somewhere else:
 #
 #   from gamspy.examples import TransportModel
 #
