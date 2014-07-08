@@ -41,10 +41,11 @@ class GamspyModel(object):
         self.model_dir,self.model_file = os.path.split(os.path.abspath(model_file))
         self.title = title
         self.name = name
-        if options is None:
-            self.options = {"optcr": 1e-4, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000}
-        else:
-            self.options = options
+
+        self.options = {"optcr": 1e-4, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000}
+        if options:
+            self.options.update(options)
+
         self.maximize = False
         self.model_type = "lp"
 
