@@ -68,7 +68,7 @@ class TransportModel(object):
                     data_file='D:/git/gamspy/tmp/transport_in.gdx',
                     out_file='D:/git/gamspy/tmp/transport_out.gdx',
                     gams_exec='C:/GAMS/win64/23.8/gams.exe')
-        # Add sets, parameters, variables, and equations to model Dictionary
+        # Add sets, parameters, variables, and equations to model. Dictionary
         # keys does not have to be identical to element names. Keys are used
         # to retrieve element objects from model.
         self.m.sets = {'i':i, 'j':j}
