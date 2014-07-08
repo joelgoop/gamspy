@@ -137,10 +137,3 @@ class GamsIter(object):
                     continue
                 else:
                     raise
-
-
-if __name__ == '__main__':
-    #gdx_file = "D:\\data\\gdxtest\\Exchange_ELIN_EPOD_ClimateMarket121207.gdx"
-    #gdx_file = "D:\\data\\gdxtest\\regional_EPOD.gdx"
-    gdx_file = "D:\\data\\gdxtest\\regional_EPOD.gdx"
-    gdx_r = GdxReader(gdx_file)
