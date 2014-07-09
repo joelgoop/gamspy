@@ -46,16 +46,17 @@ $offtext
 {{ macros.render_definitions("parameters",parameters.values())}}
 {% endblock %}
 
+
 {% block gdx_load %}
 {{ macros.section_title("load gdx data")}}
 $onundf
 $gdxin '{{ data_file|replace('/','\\') }}'
 * Load sets
-$load {{ sets.values()|selectattr("indices", "none")|join(',',attribute='no_indices') }}
+$load {{ sets.values()|selectattr("indices", "none")|join(', ',attribute='no_indices')|wordwrap(width=73,break_long_words=False,wrapstring='\n$load ') }}
 * Load subsets
-$load {{ sets.values()|rejectattr("indices", "none")|join(',',attribute='no_indices') }}
+$load {{ sets.values()|rejectattr("indices", "none")|join(', ',attribute='no_indices')|wordwrap(width=73,break_long_words=False,wrapstring='\n$load ') }}
 * Load parameters
-$load {{ parameters.values()|join(',',attribute='no_indices') }}
+$load {{ parameters.values()|join(', ',attribute='no_indices')|wordwrap(width=73,break_long_words=False,wrapstring='\n$load ') }}
 $gdxin
 $offundf
 {% endblock %}
@@ -70,7 +71,7 @@ $offundf
 {{ macros.render_definitions("equations",equations.values())}}
 
 {{ macros.section_title("model equations") }}
-{{ macros.render_equations(equations) }}
+{{ macros.render_equations(equations)}}
 
 {% block model_def %}MODEL {{ name }} / all /;{% endblock %}
 

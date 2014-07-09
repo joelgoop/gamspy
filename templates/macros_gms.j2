@@ -57,7 +57,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {%- for item in items.values() -%}
 {{ item.name }}
 {%- if item.indices %}({{ item.indices|join(',',attribute='no_indices') }}){% endif %}{% if item.conditional %}$({{ item.conditional|string }}){% endif %}..
-    {{ item|string }};
+    {{ item|string|wordwrap(width=67,break_long_words=False,wrapstring='\n            ') }};
 
 {% endfor %}
 {%- endmacro %}

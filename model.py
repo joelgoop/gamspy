@@ -91,6 +91,7 @@ class GamspyModel(object):
     def write_model_file(self,template='base_gms.j2'):
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_dirs))
         env.filters.update(filters)
+        env.tests.update(tests)
         template = env.get_template(template)
 
         with open(os.path.join(self.model_dir,self.model_file),'w') as f:
