@@ -25,6 +25,11 @@ VALID_V_TYPES = ['positive','binary','free']
 def select_vtype(variables,vtype):
     return [var for var in variables if var.vtype==vtype]
 
+# Add equalto test from new jinja2 version, since it is not available in
+# current  version on pypi
+def test_equalto(value,other):
+    return value==other
+
 def isnumber(val):
     try:
         float(val)
@@ -33,6 +38,7 @@ def isnumber(val):
     return True
 
 filters = {"select_vtype":select_vtype}
+tests = {"equalto":test_equalto}
 
 
 class GamspyAddSubExpression(object):
