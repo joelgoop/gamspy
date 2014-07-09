@@ -23,7 +23,9 @@ $ontext
 {%- if title %}
 Title: {{ title }}
 {%- endif %}
-Author: {{ author if author else 'Joel Goop' }}
+{%- if author %}
+Author: {{ author }}
+{%- endif %}
 {%- if description is defined %}
 
 {{ description}}
