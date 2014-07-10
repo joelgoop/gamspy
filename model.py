@@ -22,6 +22,7 @@ import jinja2
 import gams
 import gdx_utils as gdx
 from .types import *
+import utils
 
 class GamspyModel(object):
     """Class that contains necessary data to run a GAMS model"""
@@ -31,6 +32,7 @@ class GamspyModel(object):
                     title=None,
                     name=None,
                     options = None,
+                    opt_settings=None,
                     gams_exec='C:/GAMS/win64/23.8/gams.exe'):
         super(GamspyModel, self).__init__()
         if not os.path.isfile(gams_exec):
@@ -45,9 +47,13 @@ class GamspyModel(object):
         self.options = {"optcr": 1e-4, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000}
         if options:
             self.options.update(options)
+        self.opt_settings = {}
+        if opt_settings:
+            self.opt_settings.update(opt_settings)
 
         self.maximize = False
         self.model_type = "lp"
+        self.solver = "cplex"
 
         self.template_dirs = [os.path.join(os.path.dirname(__file__), 'templates')]
 
@@ -56,6 +62,11 @@ class GamspyModel(object):
         self.parameters = {}
         self.variables = {}
         self.equations = {}
+
+        self.header_string = """*-----------------------------------------------------------------------------
+* This file has been automatically rendered by gamspy
+*-----------------------------------------------------------------------------
+"""
 
 
     def create_thread(self):
@@ -88,11 +99,16 @@ class GamspyModel(object):
                 raise
         db.export(self.data_file)
 
-    def write_model_file(self,template='base_gms.j2'):
+    def write_model_file(self,template='base_gms.j2',optfile_template='base_optfile.j2'):
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_dirs))
-        env.filters.update(filters)
-        env.tests.update(tests)
+        env.filters.update(utils.j2env['filters'])
+        env.tests.update(utils.j2env['tests'])
+        env.globals.update(utils.j2env['globals'])
+
         template = env.get_template(template)
+        opt_template = env.get_template(optfile_template)
 
         with open(os.path.join(self.model_dir,self.model_file),'w') as f:
-            f.write(template.render(self.__dict__))
+            f.write(self.header_string+template.render(self.__dict__))
+        with open(os.path.join(self.model_dir,self.solver+".opt"),'w') as f:
+            f.write(self.header_string+opt_template.render({"settings":self.opt_settings}))

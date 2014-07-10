@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {%- if items -%}
 {{ type|upper }}
 {%- for item in items %}
-    {{ item.name }}{% if item.indices %}({{ item.indices|join(',',attribute='name') }}){% endif %}
+    {{ item.name }}{{ render_indices(item.indices) }}
 {%- endfor %}
 ;
 {%- endif %}
@@ -38,11 +38,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {# Render limits for variables #}
 {% macro render_variable_lims(vars) -%}
-{%- for lim in ['up','lo','l','fx'] -%}
-{%- for var in vars.values()|rejectattr(lim,"none") -%}
-{{ var.name }}.{{ lim }}{% if var.indices %}({{ var.indices|join(',',attribute='name') }}){% endif %} = {{ var|attr(lim) }};
-{% endfor -%}
-{% endfor -%}
+{% for lim in ['up','lo','l','fx'] -%}
+{% for var in vars.values() -%}
+{% if var.get_lim(lim) is not none %}{{ var|attr(lim) }} = {{ var.get_lim(lim) }};
+{% endif %}
+{%- endfor %}
+{%- endfor %}
 {%- endmacro %}
 
 {# Render a comment with section title #}
@@ -55,8 +56,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {# Render equations #}
 {% macro render_equations(items) -%}
 {%- for item in items.values() -%}
-{{ item.name }}
-{%- if item.indices %}({{ item.indices|join(',',attribute='no_indices') }}){% endif %}{% if item.conditional %}$({{ item.conditional|string }}){% endif %}..
+{{ item.name }}{{ render_indices(item.indices) }}{% if item.conditional %}$({{ item.conditional|string }}){% endif %}..
     {{ item|string|wordwrap(width=67,break_long_words=False,wrapstring='\n            ') }};
 
 {% endfor %}
@@ -67,4 +67,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {%- for item in items -%}
 ALIAS({{ item.aliasof.no_indices }},{{ item.name }});
 {%- endfor %}
+{%- endmacro %}
+
+{# Render indices, with replace #}
+{% macro render_indices(indices,replacements=None) -%}
+{% if indices -%}
+({% for ind in indices|custom_replace(replacements) -%}
+{{ ind.no_indices }}{% if not loop.last %},{% endif %}
+{%- endfor %})
+{%- endif %}
 {%- endmacro %}

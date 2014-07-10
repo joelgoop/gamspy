@@ -15,7 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #}
-
 {%- if title %}
 $title {{ title }}
 {%- endif %}
@@ -63,23 +62,37 @@ $gdxin
 $offundf
 {% endblock %}
 
+{% block variable_defs %}
 {{ macros.section_title("variable definitions")}}
 {{ macros.render_variable_defs(variables)}}
+{% endblock %}
 
+{% block variable_lims %}
 {{ macros.section_title("variable limits")}}
 {{ macros.render_variable_lims(variables)}}
+{% endblock %}
 
+{% block equation_defs %}
 {{ macros.section_title("equation definitions")}}
 {{ macros.render_definitions("equations",equations.values())}}
+{% endblock %}
 
+{% block equations %}
 {{ macros.section_title("model equations") }}
 {{ macros.render_equations(equations)}}
+{% endblock %}
 
 {% block model_def %}MODEL {{ name }} / all /;{% endblock %}
 
+{% block model_options %}
 {% for op,val in options.items() -%}
 {{ name }}.{{ op }} = {{ val }};
 {% endfor %}
+OPTION {{ model_type }} = {{ solver }};
+{%- if opt_settings %}
+{{ name }}.optfile = 1;
+{% endif %}
+{% endblock %}
 
 {% block solve %}SOLVE {{ name }} using {{ model_type }} {% if maximize %}maximizing{% else %}minimizing{% endif %} {{ obj_var.name }};{% endblock %}
 

@@ -18,27 +18,12 @@ import copy
 import jinja2
 import numpy as np
 import gdx_utils
+from utils import isnumber
+import functools
 
 VALID_EQN_OPS = ["=e=","=l=","=g="]
 VALID_V_TYPES = ['positive','binary','free']
-
-def select_vtype(variables,vtype):
-    return [var for var in variables if var.vtype==vtype]
-
-# Add equalto test from new jinja2 version, since it is not available in
-# current  version on pypi
-def test_equalto(value,other):
-    return value==other
-
-def isnumber(val):
-    try:
-        float(val)
-    except (ValueError,TypeError):
-        return False
-    return True
-
-filters = {"select_vtype":select_vtype}
-tests = {"equalto":test_equalto}
+VALID_V_LIMS = ['l','m','lo','up','fx']
 
 
 class GamspyAddSubExpression(object):
@@ -100,12 +85,14 @@ class GamspyArithmeticExpression(GamspyAddSubExpression):
 
 class GamspyElement(object):
     """Gams elements such as a set or parameter"""
-    def __init__(self, name, indices=None):
+    def __init__(self, name, indices=None, suffix=None):
         super(GamspyElement, self).__init__()
         self.name = name
         self.indices = indices
+        self.suffix = suffix
 
     def __str__(self,show_indices=True):
+        self.suffix_str = ".{}".format(self.suffix) if self.suffix else ""
         if show_indices and self.indices is not None:
             ind_list = []
             for ind in self.indices:
@@ -113,9 +100,9 @@ class GamspyElement(object):
                     ind_list.append(str(ind.no_indices))
                 except AttributeError:
                     ind_list.append(str(ind))
-            return self.name + '({})'.format(','.join(ind_list))
+            return self.name + self.suffix_str + '({})'.format(','.join(ind_list))
         else:
-            return self.name
+            return self.name + self.suffix_str
 
     @property
     def no_indices(self):
@@ -147,15 +134,30 @@ class GamspyAlias(GamspyElement,GamspyArithmeticExpression):
 
 class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
     """A variable in GAMS"""
+
     def __init__(self, name, indices=None, vtype="positive",up=None,lo=None,l=None,fx=None):
         super(GamspyVariable, self).__init__(name,indices)
         self.vtype = vtype.lower()
         if self.vtype not in VALID_V_TYPES:
             raise ValueError("Variable type {} is unknown.".format(self.vtype))
-        self.up = up
-        self.lo = lo
-        self.l = l
-        self.fx = fx
+        self._up = up
+        self._lo = lo
+        self._l = l
+        self._fx = fx
+
+    def get_lim(self,lim):
+        if lim not in VALID_V_LIMS:
+            raise ValueError("Variable limit {} is not valid.".format(lim))
+        return getattr(self,"_{}".format(lim))
+
+    def lim_getter(self,l):
+        suf_elem = copy.copy(self)
+        suf_elem.suffix = l
+        return suf_elem
+
+# Add each limit as a property
+for l in VALID_V_LIMS:
+    setattr(GamspyVariable,l,property(functools.partial(GamspyVariable.lim_getter,l=l)))
 
 
 class GamspyDataElement(GamspyElement):
@@ -220,7 +222,10 @@ class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
         return np.atleast_2d(self.data)
 
     def add_to_db(self,db):
-        if self.ndim == 1:
+        if self.ndim == 0:
+            num_indices = 0 if not self.indices else len(self.indices)
+            db.add_parameter(self.name,num_indices,"")
+        elif self.ndim == 1:
             gdx_utils.param_from_1d_array(db,name=self.name, set_list=self.indices[0].data, values=self.data_2d)
         elif self.ndim == 2:
             gdx_utils.param_from_2d_array(db,name=self.name, row_set=self.indices[0].data, col_set=self.indices[1].data, values=self.data_2d)
