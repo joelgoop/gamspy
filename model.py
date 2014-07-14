@@ -44,7 +44,7 @@ class GamspyModel(object):
         self.title = title
         self.name = name
 
-        self.options = {"optcr": 1e-4, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000}
+        self.options = {"optcr": 1e-5, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000, "tolinfeas": 1e-10}
         if options:
             self.options.update(options)
         self.opt_settings = {}
@@ -73,11 +73,14 @@ class GamspyModel(object):
         return threading.Thread(target=self.run_model)
 
     def run_model(self):
+        self.run_failed = False
         print "Running GAMS on {} in {}".format(self.model_file,self.model_dir)
         p = sp.Popen([self.gams_exec,self.model_file],cwd=self.model_dir)
         p.wait()
         if p.returncode != 0:
-            raise Exception("GAMS returned with an error. Return code is {}.".format(p.returncode))
+            self.run_failed = True
+            self.e = Exception("GAMS returned with an error. Return code is {}.".format(p.returncode))
+            raise self.e
         print "GAMS finished without errors."
 
     def write_data_file(self):

@@ -18,8 +18,8 @@ import copy
 import jinja2
 import numpy as np
 import gdx_utils
-from utils import isnumber
 import functools
+from utils import isnumber
 
 VALID_EQN_OPS = ["=e=","=l=","=g="]
 VALID_V_TYPES = ['positive','binary','free']

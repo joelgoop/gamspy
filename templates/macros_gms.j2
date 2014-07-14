@@ -36,6 +36,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {{ render_definitions('variables', vars.values()|select_vtype("free")) }}
 {%- endmacro %}
 
+{# Render set definitions in correct order so that subsets can be defined #}
+{% macro render_set_defs(sets,aliases) %}
+* Sets
+{{ render_definitions("sets",sets.values()|rejectattr("indices","contains_from",aliases.values())|sort(attribute="level")) }}
+* Aliases
+{{ render_aliases(aliases.values()) }}
+* Sets with alias indices
+{{ render_definitions("sets",sets.values()|selectattr("indices","contains_from",aliases.values())|sort(attribute="level")) }}
+{% endmacro %}
+
 {# Render limits for variables #}
 {% macro render_variable_lims(vars) -%}
 {% for lim in ['up','lo','l','fx'] -%}
