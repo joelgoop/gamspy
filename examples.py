@@ -64,9 +64,7 @@ class TransportModel(object):
         # Creation of model object - MODIFY ARGUMENTS TO FIT YOUR SETUP
         self.m = GamspyModel(
                     name='transport',
-                    model_file='D:/git/gamspy/tmp/transport.gms',
-                    data_file='D:/git/gamspy/tmp/transport_in.gdx',
-                    out_file='D:/git/gamspy/tmp/transport_out.gdx',
+                    work_dir='D:/git/gamspy/tmp',
                     gams_exec='C:/GAMS/win64/23.8/gams.exe')
         # Add sets, parameters, variables, and equations to model. Dictionary
         # keys does not have to be identical to element names. Keys are used
@@ -81,9 +79,7 @@ class TransportModel(object):
         # Write files and run GAMS
         self.m.write_data_file()
         self.m.write_model_file()
-        t = self.m.create_thread()
-        t.start()
-        t.join()
+        self.m.run_model()
 
     def print_results(self):
         # Read results
