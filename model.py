@@ -17,32 +17,44 @@
 import os
 import operator
 import subprocess as sp
-import threading
 import jinja2
 import gams
+import re
 import gdx_utils as gdx
 from .types import *
 import utils
 
 class GamspyModel(object):
     """Class that contains necessary data to run a GAMS model"""
-    def __init__(self, model_file,
-                    data_file,
-                    out_file,
+    def __init__(self, work_dir,
+                    name,
+                    model_file=None,
+                    data_file=None,
+                    out_file=None,
+                    status_file=None,
                     title=None,
-                    name=None,
+                    author=None,
                     options = None,
                     opt_settings=None,
                     gams_exec='C:/GAMS/win64/23.8/gams.exe'):
         super(GamspyModel, self).__init__()
         if not os.path.isfile(gams_exec):
-            raise ValueError("File {} is not a file.".format(gams_exec))
+            raise ValueError("The given GAMS exe '{}' is not a file.".format(gams_exec))
         self.gams_exec = gams_exec
-        self.data_file = data_file
-        self.out_file = out_file
-        self.model_dir,self.model_file = os.path.split(os.path.abspath(model_file))
+        if not os.path.isdir(work_dir):
+            raise ValueError("The given work dir '{}' is not a directory.".format(work_dir))
+        self.work_dir = work_dir
+
         self.title = title
         self.name = name
+        self.author = author
+
+        self.model_file = self._work_file(model_file,"{}_model.gms".format(self.name))
+        self.data_file = self._work_file(data_file,"{}_input.gdx".format(self.name))
+        self.out_file = self._work_file(out_file,"{}_output.gdx".format(self.name))
+        self.status_file = self._work_file(status_file,"{}_statuses.txt".format(self.name))
+
+        self.accept_codes = {"solvestat": [1], "modelstat": [1]}
 
         self.options = {"optcr": 1e-5, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000, "tolinfeas": 1e-10}
         if options:
@@ -55,6 +67,7 @@ class GamspyModel(object):
         self.model_type = "lp"
         self.solver = "cplex"
 
+        self.opt_file = os.path.join(self.work_dir,self.solver+".opt")
         self.template_dirs = [os.path.join(os.path.dirname(__file__), 'templates')]
 
         self.sets = {}
@@ -68,20 +81,30 @@ class GamspyModel(object):
 *-----------------------------------------------------------------------------
 """
 
-
-    def create_thread(self):
-        return threading.Thread(target=self.run_model)
-
     def run_model(self):
-        self.run_failed = False
-        print "Running GAMS on {} in {}".format(self.model_file,self.model_dir)
-        p = sp.Popen([self.gams_exec,self.model_file],cwd=self.model_dir)
+        self.statuses = {}
+
+        # Run GAMS and check return code
+        print "Running GAMS on {} in {}".format(self.model_file,self.work_dir)
+        p = sp.Popen([self.gams_exec,os.path.basename(self.model_file)],cwd=self.work_dir)
         p.wait()
         if p.returncode != 0:
-            self.run_failed = True
-            self.e = Exception("GAMS returned with an error. Return code is {}.".format(p.returncode))
-            raise self.e
-        print "GAMS finished without errors."
+            raise Exception("GAMS returned with an error. Return code is {}.".format(p.returncode))
+
+        # Read status codes from returns file
+        with open(self.status_file,'r') as f:
+            for line in f:
+                key,status = line.split(',')
+                m = re.match('(\d+)\s([\w ]+)',status)
+                self.statuses[key] = (int(float(m.group(1))),m.group(2))
+
+        # Raise exception if status codes are not acceptable
+        status_str = ""
+        for key,(code,status) in self.statuses.items():
+            if code not in self.accept_codes[key]:
+                raise Exception("There was an unacceptable status code from GAMS. {} is {}: '{}'.".format(key,code,status))
+            status_str += "{} is {}: '{}'. ".format(key,code,status)
+        print "{}\nGAMS finished without errors.".format(status_str)
 
     def write_data_file(self):
         ws = gams.GamsWorkspace()
@@ -111,7 +134,13 @@ class GamspyModel(object):
         template = env.get_template(template)
         opt_template = env.get_template(optfile_template)
 
-        with open(os.path.join(self.model_dir,self.model_file),'w') as f:
+        with open(self.model_file,'w') as f:
             f.write(self.header_string+template.render(self.__dict__))
-        with open(os.path.join(self.model_dir,self.solver+".opt"),'w') as f:
+        with open(self.opt_file,'w') as f:
             f.write(self.header_string+opt_template.render({"settings":self.opt_settings}))
+
+    def _work_file(self,filename,default):
+        if not filename:
+            return os.path.join(self.work_dir,default)
+        else:
+            return os.path.join(self.work_dir,filename)

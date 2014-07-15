@@ -94,3 +94,9 @@ OPTION {{ model_type }} = {{ solver }};
 EXECUTE_UNLOAD '{{ out_file|replace('/','\\') }}';
 {%- endif %}
 {% endblock %}
+
+{% block returns_output %}
+FILE status_file / {{ status_file|replace('/','\\') }} /;
+PUT status_file 'modelstat,' {{ name }}.tmodstat /;
+PUT status_file 'solvestat,' {{ name }}.tsolstat /;
+{% endblock %}
