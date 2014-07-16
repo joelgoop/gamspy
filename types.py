@@ -213,7 +213,7 @@ class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
 
     @property
     def ndim(self):
-        return self.data.ndim - sum([1 if e==1 else 0 for e in self.data.shape])
+        return len(self.indices)
 
     @property
     def data_2d(self):
