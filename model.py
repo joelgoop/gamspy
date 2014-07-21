@@ -76,6 +76,9 @@ class GamspyModel(object):
         self.variables = {}
         self.equations = {}
 
+        self.output_parameters = []
+        self.dump = True
+
         self.header_string = """*-----------------------------------------------------------------------------
 * This file has been automatically rendered by gamspy
 *-----------------------------------------------------------------------------

@@ -206,14 +206,17 @@ class GamspySet(GamspyDataElement,GamspyAddSubExpression):
 
 class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
     """A parameter in GAMS"""
-    def __init__(self, name, data=None, indices=None):
+    def __init__(self, name, data=None, indices=None, load=None):
         super(GamspyParameter, self).__init__(name,data,indices)
         if self.data is not None:
             self.data = self.data.astype('float64')
+            self.load = True if load is None else load
+        else:
+            self.load = False if load is None else load
 
     @property
     def ndim(self):
-        return len(self.indices)
+        return len(self.indices) if self.indices else 0
 
     @property
     def data_2d(self):
@@ -277,6 +280,8 @@ def gams_sum(*args,**kwargs):
     return func_over_sets('sum',*args,**kwargs)
 def gams_prod(*args,**kwargs):
     return func_over_sets('prod',*args,**kwargs)
+def gams_smax(*args,**kwargs):
+    return func_over_sets('smax',*args,**kwargs)
 
 
 class GamspyEquationExpression(GamspyExpression):

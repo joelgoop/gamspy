@@ -50,7 +50,7 @@ $gdxin '{{ data_file|replace('/','\\') }}'
 * Load sets
 $load {{ sets.values()|sort(attribute="level")|join(', ',attribute='no_indices')|wordwrap(width=73,break_long_words=False,wrapstring='\n$load ') }}
 * Load parameters
-$load {{ parameters.values()|join(', ',attribute='no_indices')|wordwrap(width=73,break_long_words=False,wrapstring='\n$load ') }}
+$load {{ parameters.values()|selectattr('load')|join(', ',attribute='no_indices')|wordwrap(width=73,break_long_words=False,wrapstring='\n$load ') }}
 $gdxin
 $offundf
 {% endblock %}
@@ -90,6 +90,9 @@ OPTION {{ model_type }} = {{ solver }};
 {% block solve %}SOLVE {{ name }} using {{ model_type }} {% if maximize %}maximizing{% else %}minimizing{% endif %} {{ obj_var.name }};{% endblock %}
 
 {% block dump %}
+{%- for param,expr in output_parameters -%}
+{{ param }} = {{ expr|string|wordwrap(width=75,break_long_words=False,wrapstring='\n    ') }};
+{% endfor %}
 {% if out_file -%}
 EXECUTE_UNLOAD '{{ out_file|replace('/','\\') }}';
 {%- endif %}

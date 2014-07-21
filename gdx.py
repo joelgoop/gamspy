@@ -51,7 +51,11 @@ class GdxReader(object):
     # Get value of parameter as dict indexed by tuples (key1,..,keyn)
     def get_parameter(self,param_name):
         param_obj = self.db.get_parameter(param_name)
+        if not param_obj.first_record().keys:
+            return param_obj.first_record().value
         return dict((tuple(rec.keys),rec.value) for rec in param_obj)
+
+
 
     # Get property of equation or variable as dict indexed by tuples (key_1,..,key_n)
     def get_eq_or_var(self,name,obj_type,field):
