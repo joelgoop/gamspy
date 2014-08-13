@@ -77,6 +77,7 @@ class GamspyModel(object):
         self.equations = {}
 
         self.output_parameters = []
+        self.presolve_assign = []
         self.dump = True
 
         self.header_string = """*-----------------------------------------------------------------------------

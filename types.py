@@ -85,14 +85,17 @@ class GamspyArithmeticExpression(GamspyAddSubExpression):
 
 class GamspyElement(object):
     """Gams elements such as a set or parameter"""
-    def __init__(self, name, indices=None, suffix=None):
+    def __init__(self, name, indices=None, suffix=None, conditional=None):
         super(GamspyElement, self).__init__()
         self.name = name
         self.indices = indices
         self.suffix = suffix
+        self.conditional = conditional
 
     def __str__(self,show_indices=True):
-        self.suffix_str = ".{}".format(self.suffix) if self.suffix else ""
+        suffix_str = ".{}".format(self.suffix) if self.suffix else ""
+        conditional_str = "$({})".format(self.conditional) if self.conditional else ""
+        out_str = self.name + suffix_str
         if show_indices and self.indices is not None:
             ind_list = []
             for ind in self.indices:
@@ -100,9 +103,9 @@ class GamspyElement(object):
                     ind_list.append(str(ind.no_indices))
                 except AttributeError:
                     ind_list.append(str(ind))
-            return self.name + self.suffix_str + '({})'.format(','.join(ind_list))
-        else:
-            return self.name + self.suffix_str
+            out_str += '({})'.format(','.join(ind_list))
+        out_str += conditional_str
+        return out_str
 
     @property
     def no_indices(self):
@@ -120,6 +123,11 @@ class GamspyElement(object):
             return self.no_indices
         else:
             return self.with_indices(*indices)
+
+    def cond(self,conditional):
+        new_cond_elem = copy.copy(self)
+        new_cond_elem.conditional = conditional
+        return new_cond_elem
 
 
 class GamspyAlias(GamspyElement,GamspyArithmeticExpression):

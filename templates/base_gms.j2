@@ -87,6 +87,12 @@ OPTION {{ model_type }} = {{ solver }};
 {% endif %}
 {% endblock %}
 
+{% block presolve %}
+{%- for lhs,rhs in presolve_assign -%}
+{{ lhs }} = {{ rhs|string|wordwrap(width=75,break_long_words=False,wrapstring='\n    ') }};
+{% endfor %}
+{% endblock %}
+
 {% block solve %}SOLVE {{ name }} using {{ model_type }} {% if maximize %}maximizing{% else %}minimizing{% endif %} {{ obj_var.name }};{% endblock %}
 
 {% block dump %}
