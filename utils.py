@@ -1,3 +1,12 @@
+import tempfile
+import shutil
+import contextlib
+
+@contextlib.contextmanager
+def make_tmp_dir():
+    tmp_dir = tempfile.mkdtemp()
+    yield tmp_dir
+    shutil.rmtree(tmp_dir)
 
 def isnumber(val):
     try:

@@ -26,8 +26,7 @@ import utils
 
 class GamspyModel(object):
     """Class that contains necessary data to run a GAMS model"""
-    def __init__(self, work_dir,
-                    name,
+    def __init__(self, name,work_dir,
                     model_file=None,
                     data_file=None,
                     out_file=None,
@@ -44,6 +43,7 @@ class GamspyModel(object):
         if not os.path.isdir(work_dir):
             raise ValueError("The given work dir '{}' is not a directory.".format(work_dir))
         self.work_dir = work_dir
+
 
         self.title = title
         self.name = name
@@ -148,3 +148,5 @@ class GamspyModel(object):
             return os.path.join(self.work_dir,default)
         else:
             return os.path.join(self.work_dir,filename)
+
+
