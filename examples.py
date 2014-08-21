@@ -21,22 +21,26 @@
 # above. You can also run the example by importing the transport example and
 # running it from somewhere else:
 #
-#   from gamspy.examples import TransportModel
+#    from gamspy.examples import TransportModel
+#    from gamspy.utils import make_tmp_dir
 #
-#   ex = TransportModel()
-#   ex.run()
-#   ex.print_results()
+#    with make_tmp_dir() as d:
+#        ex = TransportModel(d)
+#        ex.run()
+#        ex.print_results()
 #
 # Some settings in this file must be adapted to fit your setup.
 from model import GamspyModel
 from gdx import GdxReader
 import gdx_utils
 from .types import *
+from .utils import make_tmp_dir
 import numpy as np
 
 class TransportModel(object):
     """Transport example problem."""
     def __init__(self,
+                    work_dir,
                     f_cost=90.0,
                     a_in=[350,600],
                     b_in=[325,300,275],
@@ -61,11 +65,11 @@ class TransportModel(object):
         supply = GamspyEquation('supply', gams_sum([j],x) < a, indices=[i])
         demand = GamspyEquation('demand', gams_sum([i],x) > b, indices=[j])
 
-        # Creation of model object - MODIFY ARGUMENTS TO FIT YOUR SETUP
+        # Creation of model object - MODIFY 'gams_exec' TO FIT YOUR SETUP
         self.m = GamspyModel(
                     name='transport',
-                    work_dir='D:/git/gamspy/tmp',
-                    gams_exec='C:/GAMS/win64/23.8/gams.exe')
+                    work_dir=work_dir,
+                    gams_exec='C:/GAMS/win64/23.9/gams.exe')
         # Add sets, parameters, variables, and equations to model. Dictionary
         # keys does not have to be identical to element names. Keys are used
         # to retrieve element objects from model.
@@ -82,25 +86,29 @@ class TransportModel(object):
         self.m.run_model()
 
     def print_results(self):
-        # Read results
-        r = GdxReader(self.m.out_file)
-        # Objects from GDX are returned as tuple-indexed dict
-        x_from_gdx = r.get_var_level('x')
-        # They can be parsed to a numpy array using gdx_utils
-        i = self.m.sets['i']
-        j = self.m.sets['j']
-        x_l = gdx_utils.parse_along_2d(x_from_gdx,list(i.data),list(j.data))
-        for (row,col),val in np.ndenumerate(x_l):
-            print "From {} to {}, ship {:.0f} cases".format(i.data[row],j.data[col],val)
-        # In the case of the scalar z we just read the first value
-        z = r.get_var_level('z').values()[0]
+        # Read results by using GdxReader in a 'with'-statement
+        with GdxReader(self.m.out_file) as r:
+            # Objects from GDX are returned as tuple-indexed dict
+            x_from_gdx = r.get_var_level('x')
+
+            # They can be parsed to a numpy array using gdx_utils
+            i = self.m.sets['i']
+            j = self.m.sets['j']
+            x_l = gdx_utils.parse_along_2d(x_from_gdx,list(i.data),list(j.data))
+            for (row,col),val in np.ndenumerate(x_l):
+                print "From {} to {}, ship {:.0f} cases".format(i.data[row],j.data[col],val)
+
+            # In the case of the scalar z we just read the first value
+            z = r.get_var_level('z').values()[0]
+
         print "Total cost is {} kUSD".format(z)
 
 if __name__ == '__main__':
     # The example model can be run through:
-    ex = TransportModel()
-    ex.run()
-    ex.print_results()
+    with make_tmp_dir() as d:
+        ex = TransportModel(d)
+        ex.run()
+        ex.print_results()
 
 
 
