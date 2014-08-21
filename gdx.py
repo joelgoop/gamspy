@@ -24,9 +24,21 @@ class GdxReader(object):
     def __init__(self,gdx_file):
         super(GdxReader, self).__init__()
         self.gdx_file = gdx_file
+
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, ex_type, ex_val, ex_trace):
+        self.close()
+
+    def open(self):
         self.ws = GamsWorkspace()
         self.db = self.ws.add_database_from_gdx(self.gdx_file)
         self.get_symbol_names()
+
+    def close(self):
+        del self.db, self.ws
 
     # Get a list of elements in a set named set_name
     def get_1d_set_elements(self,set_name):
@@ -54,8 +66,6 @@ class GdxReader(object):
         if not param_obj.first_record().keys:
             return param_obj.first_record().value
         return dict((tuple(rec.keys),rec.value) for rec in param_obj)
-
-
 
     # Get property of equation or variable as dict indexed by tuples (key_1,..,key_n)
     def get_eq_or_var(self,name,obj_type,field):
