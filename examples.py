@@ -118,7 +118,7 @@ if __name__ == '__main__':
 #     """Transportation example model"""
 #     def __init__(self,**kwargs):
 #         super(TransportModel, self).__init__(**kwargs)
-
+#
 #         # Sets and parameters are properties of super-class
 #         self.sets = {
 #             'i': GamspySet('i',data=['seattle','san-diego']),
