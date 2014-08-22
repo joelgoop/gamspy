@@ -3,6 +3,7 @@ import shutil
 import contextlib
 import subprocess as sp
 import os
+import errno
 
 
 @contextlib.contextmanager
@@ -64,7 +65,7 @@ def run_gams(model_file,work_dir,gams_exec=None):
         if p.returncode != 0:
             raise GamspyExecutionError("GAMS returned with an error. Return code is {}.".format(p.returncode))
     except WindowsError as e:
-        if e.errno==2:
+        if e.errno==errno.ENOENT:
             raise GamspyExeNotFoundError("The GAMS executable '{}' was not found.".format(gams_exec))
         else:
             raise
