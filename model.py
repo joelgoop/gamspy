@@ -16,7 +16,6 @@
 #
 import os
 import operator
-import subprocess as sp
 import jinja2
 import gams
 import re
@@ -35,10 +34,8 @@ class GamspyModel(object):
                     author=None,
                     options = None,
                     opt_settings=None,
-                    gams_exec='C:/GAMS/win64/23.8/gams.exe'):
+                    gams_exec=None):
         super(GamspyModel, self).__init__()
-        if not os.path.isfile(gams_exec):
-            raise ValueError("The given GAMS exe '{}' is not a file.".format(gams_exec))
         self.gams_exec = gams_exec
         if not os.path.isdir(work_dir):
             raise ValueError("The given work dir '{}' is not a directory.".format(work_dir))
@@ -88,12 +85,7 @@ class GamspyModel(object):
     def run_model(self):
         self.statuses = {}
 
-        # Run GAMS and check return code
-        print "Running GAMS on {} in {}".format(self.model_file,self.work_dir)
-        p = sp.Popen([self.gams_exec,os.path.basename(self.model_file)],cwd=self.work_dir)
-        p.wait()
-        if p.returncode != 0:
-            raise Exception("GAMS returned with an error. Return code is {}.".format(p.returncode))
+        utils.run_gams(model_file=self.model_file,work_dir=self.work_dir,gams_exec=self.gams_exec)
 
         # Read status codes from returns file
         with open(self.status_file,'r') as f:

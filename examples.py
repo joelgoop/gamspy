@@ -65,11 +65,14 @@ class TransportModel(object):
         supply = GamspyEquation('supply', gams_sum([j],x) < a, indices=[i])
         demand = GamspyEquation('demand', gams_sum([i],x) > b, indices=[j])
 
-        # Creation of model object - MODIFY 'gams_exec' TO FIT YOUR SETUP
+        # Creation of model object
+        # Either make sure gams.exe is on your PATH or add a gams_exec argument
+        # to the object constructor, specifying where to find the correct
+        # gams.exe
         self.m = GamspyModel(
                     name='transport',
-                    work_dir=work_dir,
-                    gams_exec='C:/GAMS/win64/23.9/gams.exe')
+                    work_dir=work_dir)
+
         # Add sets, parameters, variables, and equations to model. Dictionary
         # keys does not have to be identical to element names. Keys are used
         # to retrieve element objects from model.
