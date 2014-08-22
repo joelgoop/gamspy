@@ -53,7 +53,7 @@ class GamspyModel(object):
 
         self.accept_codes = {"solvestat": [1], "modelstat": [1,8]}
 
-        self.options = {"optcr": 1e-5, "nodlim": 150000, "reslim": 100000, "iterlim": 4000000, "tolinfeas": 1e-10}
+        self.options = {"optcr": 1e-5, "tolinfeas": 1e-10}
         if options:
             self.options.update(options)
         self.opt_settings = {}
