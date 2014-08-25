@@ -51,7 +51,7 @@ class GamspyModel(object):
         self.out_file = self._work_file(out_file,"{}_output.gdx".format(self.name))
         self.status_file = self._work_file(status_file,"{}_statuses.txt".format(self.name))
 
-        self.accept_codes = {"solvestat": [1], "modelstat": [1,8]}
+        self.accept_codes = {"solvestat": [1], "reslim": 1e6, "modelstat": [1,8]}
 
         self.options = {"optcr": 1e-5, "tolinfeas": 1e-10}
         if options:
