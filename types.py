@@ -132,8 +132,8 @@ class GamspyElement(object):
 
 class GamspyAlias(GamspyElement,GamspyArithmeticExpression):
     """An alias in GAMS"""
-    def __init__(self, name, aliasof):
-        super(GamspyAlias, self).__init__(name=name)
+    def __init__(self, name, aliasof, **kwargs):
+        super(GamspyAlias, self).__init__(name=name,**kwargs)
         self.aliasof = aliasof
 
     def __getattr__(self,attr):
@@ -143,8 +143,8 @@ class GamspyAlias(GamspyElement,GamspyArithmeticExpression):
 class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
     """A variable in GAMS"""
 
-    def __init__(self, name, indices=None, vtype="positive",up=None,lo=None,l=None,fx=None):
-        super(GamspyVariable, self).__init__(name,indices)
+    def __init__(self, name, indices=None, vtype="positive",up=None,lo=None,l=None,fx=None, **kwargs):
+        super(GamspyVariable, self).__init__(name,indices,**kwargs)
         self.vtype = vtype.lower()
         if self.vtype not in VALID_V_TYPES:
             raise ValueError("Variable type {} is unknown.".format(self.vtype))
@@ -170,8 +170,8 @@ for l in VALID_V_LIMS:
 
 class GamspyDataElement(GamspyElement):
     """A Gams element that can contain data"""
-    def __init__(self, name, data=None, indices=None):
-        super(GamspyDataElement, self).__init__(name,indices)
+    def __init__(self, name, data=None, indices=None, **kwargs):
+        super(GamspyDataElement, self).__init__(name,indices, **kwargs)
         self.data = data
 
     @property
@@ -185,12 +185,12 @@ class GamspyDataElement(GamspyElement):
 
 class GamspySet(GamspyDataElement,GamspyAddSubExpression):
     """A set in GAMS"""
-    def __init__(self, name, data=None, indices=None, aliasof=None):
+    def __init__(self, name, data=None, indices=None, aliasof=None, **kwargs):
         if indices is None:
             self.dim = 1
         else:
             self.dim = len(indices)
-        super(GamspySet, self).__init__(name,self.prepare_data(data),indices)
+        super(GamspySet, self).__init__(name,self.prepare_data(data),indices,**kwargs)
         self.level = 0 if indices is None else 1 + max(i.level for i in self.indices)
 
     @GamspyDataElement.data.setter
@@ -214,8 +214,8 @@ class GamspySet(GamspyDataElement,GamspyAddSubExpression):
 
 class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
     """A parameter in GAMS"""
-    def __init__(self, name, data=None, indices=None, load=None):
-        super(GamspyParameter, self).__init__(name,data,indices)
+    def __init__(self, name, data=None, indices=None, load=None, **kwargs):
+        super(GamspyParameter, self).__init__(name,data,indices,**kwargs)
         if self.data is not None:
             self.data = self.data.astype('float64')
             self.load = True if load is None else load
@@ -254,8 +254,8 @@ class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
 
 class GamspyExpression(GamspyArithmeticExpression):
     """A GAMS expression tree"""
-    def __init__(self,current,left=None,right=None):
-        super(GamspyExpression, self).__init__()
+    def __init__(self,current,left=None,right=None,**kwargs):
+        super(GamspyExpression, self).__init__(**kwargs)
         self.current = current
         self.left = left
         self.right = right
@@ -270,8 +270,8 @@ class GamspyExpression(GamspyArithmeticExpression):
 
 class GamspyFunctionTypeExpression(GamspyExpression):
     """A function expresssion in Gams"""
-    def __init__(self, funcname, args):
-        super(GamspyFunctionTypeExpression, self).__init__(self)
+    def __init__(self, funcname, args, **kwargs):
+        super(GamspyFunctionTypeExpression, self).__init__(self,**kwargs)
         self.funcname = funcname
         self.args = args
 
@@ -294,16 +294,16 @@ def gams_smax(*args,**kwargs):
 
 class GamspyEquationExpression(GamspyExpression):
     """An expression for an equation in Gams."""
-    def __init__(self, current, left, right):
-        super(GamspyEquationExpression, self).__init__(current, left, right)
+    def __init__(self, current, left, right, **kwargs):
+        super(GamspyEquationExpression, self).__init__(current, left, right, **kwargs)
         if current not in VALID_EQN_OPS:
             raise ValueError('{} is not a valid operator in an equation.'.format(current))
 
 
 class GamspyEquation(GamspyElement):
     """A Gams 'equation', i.e. equality or inequality."""
-    def __init__(self, name, expr, indices=None,conditional=None):
-        super(GamspyEquation, self).__init__(name,indices)
+    def __init__(self, name, expr, indices=None,conditional=None,**kwargs):
+        super(GamspyEquation, self).__init__(name,indices,**kwargs)
         self.name = name
         self.indices = indices
         self.conditional = conditional
