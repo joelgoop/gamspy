@@ -45,7 +45,7 @@ class GdxReader(object):
         try:
             set_obj = self.db.get_set(set_name)
         except GamsException as e:
-            raise ValueError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(set_name,str(e)))
+            raise GdxSymbolNotFoundError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(set_name,str(e)))
         if not isinstance(set_obj, GamsSet):
             raise TypeError("'{0}' is not a set in the current gdx.".format(set_name))
         return [rec.keys[0] for rec in set_obj]
@@ -55,27 +55,36 @@ class GdxReader(object):
         try:
             set_obj = self.db.get_set(set_name)
         except GamsException as e:
-            raise ValueError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(set_name,str(e)))
+            raise GdxSymbolNotFoundError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(set_name,str(e)))
         if not isinstance(set_obj, GamsSet):
             raise TypeError("'{0}' is not a set in the current gdx.".format(set_name))
         return [tuple(rec.keys) for rec in set_obj]
 
     # Get value of parameter as dict indexed by tuples (key1,..,keyn)
     def get_parameter(self,param_name):
-        param_obj = self.db.get_parameter(param_name)
-        if not param_obj.first_record().keys:
-            return param_obj.first_record().value
+        try:
+            param_obj = self.db.get_parameter(param_name)
+        except GamsException as e:
+            raise GdxSymbolNotFoundError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(param_name,str(e)))
+        try:      
+            if not param_obj.first_record().keys:
+                return param_obj.first_record().value
+        except GamsException as e:
+            raise GdxSymbolEmptyError("Symbol {} appears to be empty.".format(param_name))
         return dict((tuple(rec.keys),rec.value) for rec in param_obj)
 
     # Get property of equation or variable as dict indexed by tuples (key_1,..,key_n)
     def get_eq_or_var(self,name,obj_type,field):
         # Get correct symbol
-        if obj_type=="variable":
-            obj = self.db.get_variable(name)
-        elif obj_type=="equation":
-            obj = self.db.get_equation(name)
-        else:
-            raise ValueError("Object type is not recognised.")
+        try:
+            if obj_type=="variable":
+                obj = self.db.get_variable(name)
+            elif obj_type=="equation":
+                obj = self.db.get_equation(name)
+            else:
+                raise ValueError("Object type is not recognised.")
+        except GamsException as e:
+            raise GdxSymbolNotFoundError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(name,str(e)))
         # Get correct field
         if field=="level":
             return dict((tuple(rec.keys),rec.level) for rec in obj)
@@ -151,3 +160,9 @@ class GamsIter(object):
                     continue
                 else:
                     raise
+
+class GdxSymbolNotFoundError(Exception):
+    pass
+        
+class GdxSymbolEmptyError(Exception):
+    pass
