@@ -78,8 +78,11 @@ $offundf
 {% block model_def %}MODEL {{ name }} / all /;{% endblock %}
 
 {% block model_options %}
-{% for op,val in options.items() -%}
+{% for op,val in model_options.items() -%}
 {{ name }}.{{ op }} = {{ val }};
+{% endfor %}
+{% for op,val in options.items() -%}
+OPTION {{ op }} = {{ val }};
 {% endfor %}
 OPTION {{ model_type }} = {{ solver }};
 {%- if opt_settings %}

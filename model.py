@@ -32,7 +32,8 @@ class GamspyModel(object):
                     status_file=None,
                     title=None,
                     author=None,
-                    options = None,
+                    options=None,
+                    model_options=None,
                     opt_settings=None,
                     gams_exec=None):
         super(GamspyModel, self).__init__()
@@ -53,10 +54,17 @@ class GamspyModel(object):
 
         self.accept_codes = {"solvestat": [1], "modelstat": [1,8]}
 
-        self.options = {"optcr": 1e-7,"tolinfeas": 1e-10}
+        # Default GAMS options "OPTION key = val;"
+        self.options = {"reslim": 1e6}
+        # Default model options "modelname.key = val;"
+        self.model_options = {"optcr": 1e-7,"tolinfeas": 1e-10}
+        # Default opt file settings, written to "solver.opt" as "key val"
+        self.opt_settings = {}
+
         if options:
             self.options.update(options)
-        self.opt_settings = {"reslim": 1e6}
+        if model_options:
+            self.model_options.update(model_options)
         if opt_settings:
             self.opt_settings.update(opt_settings)
 
