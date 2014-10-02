@@ -12,7 +12,7 @@ So far, the project has only been tested for my own very specific needs and much
 
 ## Documentation
 
-There is currently no documentation other than this `README`, the example shown in the file [example.py](example.py), and the code itself.
+There is currently no documentation other than this `README`, the example shown in the file [examples.py](examples.py), and the code itself.
 
 ## Installation
 
