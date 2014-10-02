@@ -311,3 +311,29 @@ class GamspyEquation(GamspyElement):
 
     def __str__(self):
         return str(self.expr)
+
+
+class GamspyElementList(list):
+    """List of elements that allows selection by name."""
+    def __getitem__(self, item):
+        # If item is string, get by name
+        if isinstance(item,basestring):
+            result = next((x for x in self if x.name == item), None)
+            if not result:
+                raise IndexError("Key '{}' not found.".format(item))
+            else:
+                return result
+        # Else use list.__getitem__ but if item is slice object
+        # create new object with correct type
+        else:
+            result = list.__getitem__(self, item)
+            if isinstance(result,list):
+                return GamspyElementList(result)
+            else:
+                return result
+    def __getslice__(self,i,j):
+        return GamspyElementList(list.__getslice__(self, i, j))
+    def __add__(self,other):
+        return GamspyElementList(list.__add__(self,other))
+    def __mul__(self,other):
+        return GamspyElementList(list.__mul__(self,other))

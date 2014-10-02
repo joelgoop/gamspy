@@ -102,7 +102,6 @@ class GamspyExecutionError(Exception):
     pass
 
 
-
 j2env = {
         "filters": {"select_vtype":select_vtype,"custom_replace":custom_replace,"append_dict":append_dict},
         "tests": {"equalto":test_equalto,"startswith":test_startswith,"in":test_in,"contains_from":test_contains_from},

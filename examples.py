@@ -55,6 +55,7 @@ class TransportModel(object):
         c_matrix = f_cost * d_matrix / 1000.0
         c = GamspyParameter('c',indices=[i,j],data=c_matrix)
         d = GamspyParameter('d',indices=[i,j],data=d_matrix)
+        test = GamspyParameter('test')
 
         x = GamspyVariable('x',indices=[i,j]) # default variable type is positive
         z = GamspyVariable('z',vtype='free')
@@ -77,7 +78,7 @@ class TransportModel(object):
         # keys does not have to be identical to element names. Keys are used
         # to retrieve element objects from model.
         self.m.sets = {'i':i, 'j':j}
-        self.m.parameters = {'a':a, 'b':b, 'c':c, 'd':d}
+        self.m.parameters = {'a':a, 'b':b, 'c':c, 'd':d, 'test': test}
         self.m.variables = {'x':x, 'z':z}
         self.m.equations = {'cost':cost, 'supply':supply, 'demand':demand}
         self.m.obj_var = self.m.variables['z']
