@@ -1,3 +1,19 @@
+# gamspy - Build and run GAMS models from Python
+# Copyright (C) 2014 Joel Goop
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 import tempfile
 import shutil
 import contextlib
@@ -8,42 +24,50 @@ import errno
 
 @contextlib.contextmanager
 def make_tmp_dir():
-    tmp_dir = tempfile.mkdtemp()
-    yield tmp_dir
-    shutil.rmtree(tmp_dir)
+    """Create a temporary directory for use in with-statement."""
+    try:
+        tmp_dir = tempfile.mkdtemp()
+        yield tmp_dir
+    finally:
+        shutil.rmtree(tmp_dir)
 
 def isnumber(val):
+    """Test if val is a number by trying to cast to float."""
     try:
         float(val)
+        return True
     except (ValueError,TypeError):
         return False
-    return True
 
 def select_vtype(variables,vtype):
+    """Return a list of objects with attribute vtype=vtype"""
     return [var for var in variables if var.vtype==vtype]
 
-# Add equalto test from new jinja2 version, since it is not available in
-# current  version on pypi
 def test_equalto(value,other):
+    """Add equalto test from new jinja2 version, since it is not available in current  version on pypi."""
     return value==other
 
 def test_startswith(value,other):
+    """Test wrapping string.startswith"""
     return value.startswith(other)
 
 def test_in(value,other):
+    """Test if value is in other."""
     return value in other
 
 def test_contains_from(values,other):
+    """Test if other contains any object from values."""
     if not values:
         return False
     else:
         return any([any([x is y for y in other]) for x in values])
 
 def append_dict(d1,d2):
+    """Append d2 to d1 and return new dict."""
     return dict(d1.items()+d2.items())
 
-
 def custom_replace(values,replacements):
+    """Replace in values based on (to_replace,replace_with) pairs in replacements."""
     if not replacements:
         return values
     def repl(v):
@@ -54,6 +78,7 @@ def custom_replace(values,replacements):
     return map(repl,values)
 
 def run_gams(model_file,work_dir,gams_exec=None):
+    """Run gams executable."""
     if not gams_exec:
         gams_exec = "gams"
 
