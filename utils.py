@@ -20,6 +20,7 @@ import contextlib
 import subprocess as sp
 import os
 import errno
+import platform
 
 
 @contextlib.contextmanager
@@ -77,7 +78,7 @@ def custom_replace(values,replacements):
         return v
     return map(repl,values)
 
-def run_gams(model_file,work_dir,gams_exec=None):
+def run_gams(model_file,work_dir,gams_exec=None,quiet=True):
     """Run gams executable."""
     if not gams_exec:
         gams_exec = "gams"
@@ -85,7 +86,12 @@ def run_gams(model_file,work_dir,gams_exec=None):
     # Run GAMS and check return code
     print "Running GAMS on {} in {}".format(model_file,work_dir)
     try:
-        p = sp.Popen([gams_exec,os.path.basename(model_file)],cwd=work_dir)
+        quiet_args = []
+        if quiet:
+            # Set arguments to prevent GAMS from writing output (platform-dependent)
+            quiet_args += ['o','nul'] if platform.system()=='Windows' else ['o','/dev/null']
+            quiet_args += ['lo','0']
+        p = sp.Popen([gams_exec,os.path.basename(model_file)]+quiet_args,cwd=work_dir)
         p.wait()
         if p.returncode != 0:
             raise GamspyExecutionError("GAMS returned with an error. Return code is {}.".format(p.returncode))

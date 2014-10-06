@@ -106,7 +106,7 @@ class GamspyModel(object):
         status_str = ""
         for key,(code,status) in self.statuses.items():
             if code not in self.accept_codes[key]:
-                raise Exception("There was an unacceptable status code from GAMS. {} is {}: '{}'.".format(key,code,status))
+                raise GamspyExecutionError("Unacceptable status code from GAMS. {} is {}: '{}'.".format(key,code,status))
             status_str += "{} is {}: '{}'. ".format(key,code,status)
         print "{}\nGAMS finished without errors.".format(status_str)
 
