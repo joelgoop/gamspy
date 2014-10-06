@@ -89,23 +89,31 @@ class TransportModel(object):
         self.m.write_model_file()
         self.m.run_model()
 
-    def print_results(self):
+    def get_shipping_flows(self):
         # Read results by using GdxReader in a 'with'-statement
         with GdxReader(self.m.out_file) as r:
             # Objects from GDX are returned as tuple-indexed dict
             x_from_gdx = r.get_var_level('x')
 
-            # They can be parsed to a numpy array using gdx_utils
-            i = self.m.sets['i']
-            j = self.m.sets['j']
-            x_l = gdx_utils.parse_along_2d(x_from_gdx,list(i.data),list(j.data))
-            for (row,col),val in np.ndenumerate(x_l):
-                print "From {} to {}, ship {:.0f} cases".format(i.data[row],j.data[col],val)
+        # They can be parsed to a numpy array using gdx_utils
+        i = self.m.sets['i']
+        j = self.m.sets['j']
+        x_l = gdx_utils.parse_along_2d(x_from_gdx,list(i.data),list(j.data))
+        return {(i.data[row],j.data[col]): val for
+                    (row,col),val in np.ndenumerate(x_l)}
 
+    def get_tot_cost(self):
+        with GdxReader(self.m.out_file) as r:
             # In the case of the scalar z we just read the first value
-            z = r.get_var_level('z').values()[0]
+            return r.get_var_level('z').values()[0]
 
-        print "Total cost is {} kUSD".format(z)
+    def print_results(self):
+        # Loop through result rows and print
+        for (from_loc,to_loc),val in self.get_shipping_flows().items():
+            print "From {} to {}, ship {:.0f} cases" \
+                        .format(from_loc,to_loc,val)
+
+        print "Total cost is {} kUSD".format(self.get_tot_cost())
 
 if __name__ == '__main__':
     # The example model can be run through:

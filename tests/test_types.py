@@ -1,6 +1,6 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from gamspy.types import GamspyElementList, GamspyParameter, GamspySet
+from gamspy.types import *
 import pytest
 
 el_names =  ["test1","test2","test3"]
@@ -39,3 +39,21 @@ class TestGamspyElements:
     def test_parameter_data_load(self,p_matr):
         assert (p_matr.load and p_matr.data is not None) or \
                     (p_matr.data is None and not p_matr.load)
+
+    def test_valid_v_types(self):
+        for vtype in VALID_V_TYPES:
+            GamspyVariable('test',vtype=vtype)
+        with pytest.raises(ValueError):
+            v = GamspyVariable('test',vtype='other')
+
+class TestIndexString:
+    @pytest.mark.parametrize("el_type",[GamspyVariable,GamspyParameter,GamspySet])
+    def test_index_string_repr(self,el_type):
+        elname = "el"
+        snames = ["s{}".format(i) for i in range(1,4)]
+        indices = [GamspySet(sn) for sn in snames[:-1]]
+        indep_set = GamspySet(snames[-1])
+        element = el_type(elname,indices=indices)
+        assert str(element) == "{}({})".format(elname,",".join(snames[:-1]))
+        assert str(element.no_indices) == elname
+        assert str(element.ix(indep_set)) == "{}({})".format(elname,snames[-1])
