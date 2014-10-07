@@ -1,0 +1,15 @@
+GAMS==1.0
+MarkupSafe==0.23
+cfgmcc==1
+colorama==0.3.2
+dctmcc==1
+gamsxcc==1
+gdxcc==7
+gevmcc==6
+gmdcc==1
+gmomcc==12
+jinja2==2.7.3
+numpy==1.9.0
+optcc==2
+py==1.4.25
+pytest==2.6.3
