@@ -2,8 +2,13 @@
 *.c
 *.pyd
 *.pyc
+
+
 build/
+dist/
 tmp/
+MANIFEST
+
 *.sublime-*
 .cache/
 Include/
