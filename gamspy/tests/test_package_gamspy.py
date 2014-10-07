@@ -1,5 +1,4 @@
 import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import pytest
 from gamspy.examples import TransportModel
 from gamspy.utils import make_tmp_dir
