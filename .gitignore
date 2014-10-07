@@ -6,3 +6,6 @@ build/
 tmp/
 *.sublime-*
 .cache/
+Include/
+Scripts/
+Lib/
