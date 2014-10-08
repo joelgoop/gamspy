@@ -42,7 +42,6 @@ class GamspyModel(object):
             raise ValueError("The given work dir '{}' is not a directory.".format(work_dir))
         self.work_dir = work_dir
 
-
         self.title = title
         self.name = name
         self.author = author

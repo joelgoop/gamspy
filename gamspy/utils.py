@@ -21,6 +21,7 @@ import subprocess as sp
 import os
 import errno
 import platform
+IS_WINDOWS = platform.system()=='Windows'
 
 
 @contextlib.contextmanager
@@ -78,6 +79,9 @@ def custom_replace(values,replacements):
         return v
     return map(repl,values)
 
+def fix_path(p):
+    return p.replace('/','\\') if IS_WINDOWS else p
+
 def run_gams(model_file,work_dir,gams_exec=None,quiet=True):
     """Run gams executable."""
     if not gams_exec:
@@ -89,13 +93,13 @@ def run_gams(model_file,work_dir,gams_exec=None,quiet=True):
         quiet_args = []
         if quiet:
             # Set arguments to prevent GAMS from writing output (platform-dependent)
-            quiet_args += ['o','nul'] if platform.system()=='Windows' else ['o','/dev/null']
+            quiet_args += ['o','nul'] if IS_WINDOWS else ['o','/dev/null']
             quiet_args += ['lo','0']
         p = sp.Popen([gams_exec,os.path.basename(model_file)]+quiet_args,cwd=work_dir)
         p.wait()
         if p.returncode != 0:
             raise GamspyExecutionError("GAMS returned with an error. Return code is {}.".format(p.returncode))
-    except WindowsError as e:
+    except OSError as e:
         if e.errno==errno.ENOENT:
             raise GamspyExeNotFoundError("The GAMS executable '{}' was not found.".format(gams_exec))
         else:
@@ -109,7 +113,7 @@ class GamspyExecutionError(Exception):
 
 
 j2env = {
-        "filters": {"select_vtype":select_vtype,"custom_replace":custom_replace,"append_dict":append_dict},
+        "filters": {"select_vtype":select_vtype,"custom_replace":custom_replace,"append_dict":append_dict,"fix_path": fix_path},
         "tests": {"equalto":test_equalto,"startswith":test_startswith,"in":test_in,"contains_from":test_contains_from},
         "globals": {"enumerate":enumerate,"zip":zip}
     }

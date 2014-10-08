@@ -46,7 +46,7 @@ $offtext
 {% block gdx_load %}
 {{ macros.section_title("load gdx data")}}
 $onundf
-$gdxin '{{ data_file|replace('/','\\') }}'
+$gdxin '{{ data_file|fix_path }}'
 * Load sets
 $load {{ sets.values()|sort(attribute="level")|join(', ',attribute='no_indices')|wordwrap(width=73,break_long_words=False,wrapstring='\n$load ') }}
 * Load parameters
@@ -103,12 +103,12 @@ OPTION {{ model_type }} = {{ solver }};
 {{ param }} = {{ expr|string|wordwrap(width=75,break_long_words=False,wrapstring='\n    ') }};
 {% endfor %}
 {% if out_file -%}
-EXECUTE_UNLOAD '{{ out_file|replace('/','\\') }}';
+EXECUTE_UNLOAD '{{ out_file|fix_path }}';
 {%- endif %}
 {% endblock %}
 
 {% block returns_output %}
-FILE status_file / {{ status_file|replace('/','\\') }} /;
+FILE status_file / '{{ status_file|fix_path }}' /;
 PUT status_file 'modelstat,' {{ name }}.tmodstat /;
 PUT status_file 'solvestat,' {{ name }}.tsolstat /;
 {% endblock %}
