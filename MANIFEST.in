@@ -1,0 +1,6 @@
+recursive-include gamspy *.py
+recursive-include gamspy *.c
+recursive-include gamspy *.j2
+include *.md
+include *.txt
+include LICENSE

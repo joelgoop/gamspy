@@ -14,15 +14,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from distutils import setup
+from distutils.core import setup
 from setuptools.command.test import test as TestCommand
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
+from distutils.command.sdist import sdist as _sdist
 import numpy as np
 import gamspy
 import os
 
-# os.system('cython.bat')
+cmdclass = {}
+ext_modules = []
+
+try:
+    from Cython.Distutils import build_ext
+except ImportError:
+    use_cython = False
+else:
+    use_cython = True
+
+
 
 
 class PyTest(TestCommand):
@@ -36,11 +46,29 @@ class PyTest(TestCommand):
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
 
-ext_module = Extension(
-    "gdx_utils",
-    ["gamspy/gdx_utils.pyx"],
-    include_dirs = [np.get_include()]
-)
+if use_cython:
+    class sdist(_sdist):
+        def run(self):
+            # Make sure the compiled Cython files in the distribution are up-to-date
+            from Cython.Build import cythonize
+            print "Cythonizing..."
+            cythonize(['gamspy/gdx_utils.pyx'])
+            _sdist.run(self)
+    cmdclass.update({'sdist': sdist})
+    ext_modules += [Extension(
+                        "gamspy.gdx_utils",
+                        ["gamspy/gdx_utils.pyx"],
+                        include_dirs = [np.get_include()]
+                )]
+    cmdclass.update({ 'build_ext': build_ext })
+else:
+    ext_modules += [Extension(
+                        "gamspy.gdx_utils",
+                        ["gamspy/gdx_utils.c"],
+                        include_dirs = [np.get_include()]
+                )]
+
+cmdclass.update({'test': PyTest})
 
 setup(
     name='gamspy',
@@ -49,6 +77,7 @@ setup(
     license='GNU General Public License v3 (GPLv3)',
     author='Joel Goop',
     tests_require=['pytest'],
+    test_suite='gamspy.test',
     install_requires=['GAMS==1.0',
                         'MarkupSafe==0.23',
                         'cfgmcc==1',
@@ -65,8 +94,8 @@ setup(
                         'py==1.4.25',
                         'pytest==2.6.3',
                     ],
-    cmdclass={'test': PyTest, 'build_ext': build_ext},
-    ext_modules = [ext_module],
+    cmdclass=cmdclass,
+    ext_modules = ext_modules,
     description='Build and run GAMS models from Python',
     packages=['gamspy'],
     include_package_data=True,
