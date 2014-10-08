@@ -21,6 +21,7 @@ from distutils.command.sdist import sdist as _sdist
 import numpy as np
 import gamspy
 import os
+import sys
 
 cmdclass = {}
 ext_modules = []
@@ -32,9 +33,6 @@ except ImportError:
 else:
     use_cython = True
 
-
-
-
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -43,7 +41,7 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
-        errcode = pytest.main(self.test_args)
+        errcode = pytest.main(["gamspy"]+self.test_args)
         sys.exit(errcode)
 
 if use_cython:
