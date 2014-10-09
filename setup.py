@@ -75,7 +75,6 @@ setup(
     license='GNU General Public License v3 (GPLv3)',
     author='Joel Goop',
     tests_require=['pytest'],
-    test_suite='gamspy.test',
     install_requires=['GAMS==1.0',
                         'MarkupSafe==0.23',
                         'cfgmcc==1',

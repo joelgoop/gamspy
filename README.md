@@ -12,13 +12,18 @@ So far, the project has only been tested for my own very specific needs and much
 
 ## Documentation
 
-There is currently no documentation other than this `README`, the example shown in the file [examples.py](examples.py), and the code itself.
+There is currently no documentation other than this `README`, the example shown in the file [examples.py](gamspy/examples.py), and the code itself.
 
 ## Dependencies
 
-Dependencies are listed in [setup.py](setup.py) and will be handled by `setuptools`, but in order to compile the Cython module `gdx_utils` you need to install `numpy` first using `pip install` or any other method. 
+Dependencies are listed in [setup.py](setup.py) and will be handled by `setuptools` or `pip`, but in order to compile the Cython module `gdx_utils` you need to install `numpy` first using `pip install` or any other method. 
 
 You will also need the Python API package included with newer GAMS releases. If you haven't already, install GAMS. Then, in a command prompt, go to `<path to GAMS>/apifiles/Python/api` and run either `pip install .` or `python setup.py install`.
+
+## Installation
+For Windows 64-bit systems you can download a binary installer that can be used either directly or with `easy_install` (e.g. in a `virtualenv`). You can also install the package from source by downloading the source distributions from Releases or install directly from github using `pip install git+git://github.com/joelgoop/gamspy.git@<release-tag>#egg=gamspy`. (Since the github repository does not contain the `cython`-generated C code, this method will also require `cython` to compile the .pyx file to C code.) 
+
+To install from source, you also need to have a correct build environment setup. I have tested the procedure on Ubuntu 14.04 64-bit and it seems to work well, but on Windows it can be a bit more tricky. I have installed Windows SDK and use the file [prepare_build_env.bat](prepare_build_env.bat) to set the correct environment variables, but there is no guarantee that this works anywhere else.  
 
 ## Licensing 
 

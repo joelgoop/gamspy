@@ -2,6 +2,7 @@
 *.c
 *.pyd
 *.pyc
+*.egg
 
 
 build/
