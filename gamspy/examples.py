@@ -29,12 +29,17 @@
 #        ex.run()
 #        ex.print_results()
 #
+# or through the shortcut:
+#
+#    import gamspy.examples as ex
+#    ex.run()
+#
 # Some settings in this file must be adapted to fit your setup.
-from model import GamspyModel
-from gdx import GdxReader
-import gdx_utils
-from .types import *
-from .utils import make_tmp_dir
+from gamspy.model import GamspyModel
+import gamspy.gdx as gdx
+import gamspy.gdx_utils
+from gamspy.types import *
+from gamspy.utils import make_tmp_dir
 import numpy as np
 
 class TransportModel(object):
@@ -91,7 +96,7 @@ class TransportModel(object):
 
     def get_shipping_flows(self):
         # Read results by using GdxReader in a 'with'-statement
-        with GdxReader(self.m.out_file) as r:
+        with gdx.get_reader(self.m.out_file) as r:
             # Objects from GDX are returned as tuple-indexed dict
             x_from_gdx = r.get_var_level('x')
 
@@ -103,7 +108,7 @@ class TransportModel(object):
                     (row,col),val in np.ndenumerate(x_l)}
 
     def get_tot_cost(self):
-        with GdxReader(self.m.out_file) as r:
+        with gdx.get_reader(self.m.out_file) as r:
             # In the case of the scalar z we just read the first value
             return r.get_var_level('z').values()[0]
 
@@ -114,6 +119,12 @@ class TransportModel(object):
                         .format(from_loc,to_loc,val)
 
         print "Total cost is {} kUSD".format(self.get_tot_cost())
+
+def run():
+    with make_tmp_dir() as d:
+        ex = TransportModel(d)
+        ex.run()
+        ex.print_results()
 
 if __name__ == '__main__':
     # The example model can be run through:

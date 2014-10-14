@@ -18,8 +18,19 @@ from gams import GamsWorkspace, GamsDatabase, GamsParameter, \
                  GamsSet, GamsVariable, GamsException
 import re
 from csv import writer
+import contextlib
 
 VALID_FIELDS = ["level","upper","lower","marginal"]
+
+@contextlib.contextmanager
+def get_reader(gdx_file):
+    try:
+        r = GdxReader(gdx_file)
+        r.open()
+        yield r
+    finally:
+        r.close()
+        del r
 
 # Handle gdx files
 class GdxReader(object):
@@ -76,13 +87,10 @@ class GdxReader(object):
         return dict((tuple(rec.keys),rec.value) for rec in param_obj)
 
     # Get property of equation or variable as dict indexed by tuples (key_1,..,key_n)
-    def get_eq_or_var(self,name,obj_type,field):
+    def get_eq_or_var(self,name,field):
         # Get correct symbol
         try:
-            if obj_type in ["variable","equation"]:
-                obj = self.db.get_symbol(name)
-            else:
-                raise ValueError("Object type is not recognised.")
+            obj = self.db.get_symbol(name)
         except GamsException as e:
             raise GdxSymbolNotFoundError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(name,str(e)))
         # Get correct field
@@ -93,21 +101,21 @@ class GdxReader(object):
 
     # Quick access functions
     def get_eq_level(self,name):
-        return self.get_eq_or_var(name,obj_type="equation",field="level")
+        return self.get_eq_or_var(name,field="level")
     def get_var_level(self,name):
-        return self.get_eq_or_var(name,obj_type="variable",field="level")
+        return self.get_eq_or_var(name,field="level")
     def get_eq_marginal(self,name):
-        return self.get_eq_or_var(name,obj_type="equation",field="marginal")
+        return self.get_eq_or_var(name,field="marginal")
     def get_var_marginal(self,name):
-        return self.get_eq_or_var(name,obj_type="variable",field="marginal")
+        return self.get_eq_or_var(name,field="marginal")
     def get_eq_upper(self,name):
-        return self.get_eq_or_var(name,obj_type="equation",field="upper")
+        return self.get_eq_or_var(name,field="upper")
     def get_var_upper(self,name):
-        return self.get_eq_or_var(name,obj_type="variable",field="upper")
+        return self.get_eq_or_var(name,field="upper")
     def get_eq_lower(self,name):
-        return self.get_eq_or_var(name,obj_type="equation",field="lower")
+        return self.get_eq_or_var(name,field="lower")
     def get_var_lower(self,name):
-        return self.get_eq_or_var(name,obj_type="variable",field="lower")
+        return self.get_eq_or_var(name,field="lower")
 
     # Read symbols and place names in list depending on type
     def get_symbol_names(self):
