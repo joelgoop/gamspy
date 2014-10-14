@@ -14,9 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-from gams import *
+from gams import GamsWorkspace, GamsDatabase, GamsParameter, \
+                 GamsSet, GamsVariable, GamsException
 import re
 from csv import writer
+
+VALID_FIELDS = ["level","upper","lower","marginal"]
 
 # Handle gdx files
 class GdxReader(object):
@@ -35,7 +38,6 @@ class GdxReader(object):
     def open(self):
         self.ws = GamsWorkspace()
         self.db = self.ws.add_database_from_gdx(self.gdx_file)
-        self.get_symbol_names()
 
     def close(self):
         del self.db, self.ws
@@ -66,7 +68,7 @@ class GdxReader(object):
             param_obj = self.db.get_parameter(param_name)
         except GamsException as e:
             raise GdxSymbolNotFoundError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(param_name,str(e)))
-        try:      
+        try:
             if not param_obj.first_record().keys:
                 return param_obj.first_record().value
         except GamsException as e:
@@ -77,23 +79,15 @@ class GdxReader(object):
     def get_eq_or_var(self,name,obj_type,field):
         # Get correct symbol
         try:
-            if obj_type=="variable":
-                obj = self.db.get_variable(name)
-            elif obj_type=="equation":
-                obj = self.db.get_equation(name)
+            if obj_type in ["variable","equation"]:
+                obj = self.db.get_symbol(name)
             else:
                 raise ValueError("Object type is not recognised.")
         except GamsException as e:
             raise GdxSymbolNotFoundError("A symbol named '{0}' could not be retrieved.\nOrig. msg: {1}".format(name,str(e)))
         # Get correct field
-        if field=="level":
-            return dict((tuple(rec.keys),rec.level) for rec in obj)
-        elif field=="upper":
-            return dict((tuple(rec.keys),rec.upper) for rec in obj)
-        elif field=="lower":
-            return dict((tuple(rec.keys),rec.lower) for rec in obj)
-        elif field=="marginal":
-            return dict((tuple(rec.keys),rec.marginal) for rec in obj)
+        if field in VALID_FIELDS:
+            return dict((tuple(rec.keys),getattr(rec,field)) for rec in obj)
         else:
             raise ValueError("Field type is not recognised.")
 
@@ -163,6 +157,6 @@ class GamsIter(object):
 
 class GdxSymbolNotFoundError(Exception):
     pass
-        
+
 class GdxSymbolEmptyError(Exception):
     pass
