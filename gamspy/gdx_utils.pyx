@@ -82,3 +82,14 @@ cpdef cnp.ndarray parse_along_2d(dict to_parse, list args1, list args2):
         except KeyError as e:
             print "{},{} was not found.".format(args1[i],args2[j])
     return tmp
+
+cpdef cnp.ndarray parse_along_nd(dict to_parse, tuple arg_lists):
+    cdef tuple idxs
+    cdef cnp.float64_t dummy
+    cdef cnp.ndarray tmp = np.zeros(tuple(map(len,arg_lists)))
+    for idxs,dummy in np.ndenumerate(tmp):
+        try:
+            tmp[idxs] = to_parse[tuple([arg_list[i] for i,arg_list in zip(idxs,arg_lists)])]
+        except KeyError as e:
+            pass
+    return tmp
