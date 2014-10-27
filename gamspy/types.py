@@ -235,7 +235,7 @@ class GamspyParameter(GamspyDataElement,GamspyArithmeticExpression):
         return np.atleast_2d(self.data)
 
     def add_to_db(self,db):
-        if self.ndim == 0:
+        if self.ndim == 0 or not self.load:
             num_indices = 0 if not self.indices else len(self.indices)
             db.add_parameter(self.name,num_indices,"")
         elif self.ndim == 1:
