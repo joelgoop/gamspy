@@ -66,8 +66,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {# Render equations #}
 {% macro render_equations(items) -%}
 {%- for item in items.values() -%}
-{{ item.name }}{{ render_indices(item.indices) }}{% if item.conditional %}$({{ item.conditional|string }}){% endif %}..
-    {{ item|string|wordwrap(width=67,break_long_words=False,wrapstring='\n            ') }};
+{{ item|string }}..
+    {{ item.expr|string|wordwrap(width=67,break_long_words=False,wrapstring='\n            ') }};
 
 {% endfor %}
 {%- endmacro %}

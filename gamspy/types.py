@@ -309,9 +309,6 @@ class GamspyEquation(GamspyElement):
         self.conditional = conditional
         self.expr = expr
 
-    def __str__(self):
-        return str(self.expr)
-
 
 class GamspyElementList(list):
     """List of elements that allows selection by name."""
