@@ -23,7 +23,8 @@ from utils import isnumber
 
 VALID_EQN_OPS = ["=e=","=l=","=g="]
 VALID_V_TYPES = ['positive','binary','free']
-VALID_V_LIMS = ['l','m','lo','up','fx']
+VALID_V_SUF = ['l','m','lo','up','fx']
+VALID_EQ_SUF = ['l','m','lo','up']
 
 
 class GamspyAddSubExpression(object):
@@ -129,6 +130,11 @@ class GamspyElement(object):
         new_cond_elem.conditional = conditional
         return new_cond_elem
 
+    def lim_getter(self,l):
+        suf_elem = copy.copy(self)
+        suf_elem.suffix = l
+        return suf_elem
+
 
 class GamspyAlias(GamspyElement,GamspyArithmeticExpression):
     """An alias in GAMS"""
@@ -154,17 +160,13 @@ class GamspyVariable(GamspyElement,GamspyArithmeticExpression):
         self._fx = fx
 
     def get_lim(self,lim):
-        if lim not in VALID_V_LIMS:
+        if lim not in VALID_V_SUF:
             raise ValueError("Variable limit {} is not valid.".format(lim))
         return getattr(self,"_{}".format(lim))
 
-    def lim_getter(self,l):
-        suf_elem = copy.copy(self)
-        suf_elem.suffix = l
-        return suf_elem
 
-# Add each limit as a property
-for l in VALID_V_LIMS:
+# Add each limit as a property to variables
+for l in VALID_V_SUF:
     setattr(GamspyVariable,l,property(functools.partial(GamspyVariable.lim_getter,l=l)))
 
 
@@ -309,6 +311,9 @@ class GamspyEquation(GamspyElement):
         self.conditional = conditional
         self.expr = expr
 
+# Add each limit as a property to equations
+for l in VALID_EQ_SUF:
+    setattr(GamspyEquation,l,property(functools.partial(GamspyEquation.lim_getter,l=l)))
 
 class GamspyElementList(list):
     """List of elements that allows selection by name."""
