@@ -1,3 +1,4 @@
+SetLocal EnableDelayedExpansion
 SET ORIGINAL_PATH=%PATH%
 CALL "C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin\SetEnv.cmd" /x64 /release /win7
 :: Reset LIB and INCLUDE with correct folders (for some reason set incorrectly from SetEnv)
